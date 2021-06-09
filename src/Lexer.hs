@@ -1,0 +1,57 @@
+module Lexer where
+import Text.Read
+import Data.Maybe
+import Constants
+import DataStructures
+import Helpers
+
+
+genListOfTokens :: String -> [Token]
+genListOfTokens str = retokenize $ dialex str
+
+-- groups tokens that belong to each other together  
+retokenize :: [Token] -> [Token]
+retokenize [] = []
+retokenize (x:xs:xss)
+                | x == TEQUAL && xs == TEQUAL = TBinOp BO_EQUAL : retokenize xss
+                | x == TBinOp BO_GREATER && xs == TEQUAL = TBinOp BO_GREATER_EQUAL : retokenize xss
+                | x == TBinOp BO_SMALLER && xs == TEQUAL = TBinOp BO_SMALLER_EQUAL : retokenize xss
+                | x == TBinOp BO_DIV && xs == TEQUAL = TBinOp BO_UNEQUAL : retokenize xss
+                | x == TLPAREN && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
+retokenize (x:xs) = x : retokenize xs
+
+dialex :: String -> [Token]
+dialex "" = []
+dialex sent@(x:xs) 
+                | x == ' ' = dialex xs
+                | otherwise = tokenize (fst result) : dialex (snd result)
+                where result = sliceToken "" sent
+
+
+sliceToken :: String -> String -> (String, String)
+sliceToken word "" = (word, "")
+sliceToken "" rest@(x:xs)
+                | isSpecialChar x = (toStr x, xs)
+sliceToken word rest@(x:xs)
+                | isSpecialChar x = (word, rest)
+                | x == ' ' = (word, xs)
+                | otherwise = sliceToken (word ++ [x]) xs
+
+-- "+-*/();=><&|"
+tokenize :: String -> Token
+tokenize "+" = TBinOp BO_PLUS
+tokenize "-" = TBinOp BO_MINUS
+tokenize "*" = TBinOp BO_MUL
+tokenize "/" = TBinOp BO_DIV
+tokenize "(" = TLPAREN
+tokenize ")" = TRPAREN
+tokenize ";" = TSEMICOL 
+tokenize "=" = TEQUAL
+tokenize ">" = TBinOp BO_GREATER
+tokenize "<" = TBinOp BO_SMALLER
+tokenize "&" = TBinOp BO_AND
+tokenize "|" = TBinOp BO_OR
+tokenize other 
+            | isJust (readMaybe other :: Maybe Int) = TAtomExpr $ T_INT (read other)
+            | isJust (readMaybe other :: Maybe Bool) = TAtomExpr $ T_BOOL (read other)
+-- tokenize _ = TNULL
