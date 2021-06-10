@@ -51,7 +51,15 @@ tokenize ">" = TBinOp BO_GREATER
 tokenize "<" = TBinOp BO_SMALLER
 tokenize "&" = TBinOp BO_AND
 tokenize "|" = TBinOp BO_OR
+tokenize "not" = TUniOp UO_NOT 
+tokenize "main" = T_MAIN
+tokenize "let" = T_LET 
+tokenize "in" = T_IN
+tokenize "if" = T_IF  
+tokenize "then" = T_THEN 
+tokenize "else" = T_ELSE 
 tokenize other 
             | isJust (readMaybe other :: Maybe Int) = TAtomExpr $ T_INT (read other)
             | isJust (readMaybe other :: Maybe Bool) = TAtomExpr $ T_BOOL (read other)
+tokenize var = TAtomExpr $ T_VAR $ Name var
 -- tokenize _ = TNULL
