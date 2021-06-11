@@ -22,11 +22,7 @@ data Expr = Let LocalDef Expr
 data BinaryOp = BO_AND
               | BO_OR
               | BO_EQUAL
-              | BO_UNEQUAL
-              | BO_GREATER
-              | BO_GREATER_EQUAL
               | BO_SMALLER
-              | BO_SMALLER_EQUAL
               | BO_PLUS
               | BO_MINUS
               | BO_MUL
@@ -66,3 +62,46 @@ data Token = TAtomExpr AtomExpr
 -- Maybe replaced later
 data SyntaxTree a = Leaf a | Node (SyntaxTree a) (SyntaxTree a)
         deriving Show
+
+-- data SyntaxGraph 
+
+-- EBNF Meta Grammar
+
+-- data Grammar = Prod Produktion |
+
+-- Make LL(1) Grammar
+
+-- ORIGINAL:
+-- Programm             ::= Definition ";" { Definition ";"} .
+-- Definition           ::= Variable {Variable} "=" Ausdruck .
+-- Lokaldefinitionen    ::= Lokaldefinition { ";" Lokaldefinition } .
+-- Lokaldefinition      ::= Variable "=" Ausdruck .
+-- Ausdruck             ::= "let" Lokaldefinitionen "in" Ausdruck
+--                        | "if" Ausdruck "then" Ausdruck "else" Ausdruck
+--                        | Ausdruck BinärOp Ausdruck
+--                        | UnärOp Ausdruck
+--                        | Ausdruck Ausdruck
+--                        | "(" Ausdruck ")"
+--                        | AtomarerAusdruck .
+-- BinärOp              ::= "&" | "|" | "==" | "<" | "+" | "−" | "∗" | "/" .
+-- UnärOp               ::= "not" | "−" .
+-- AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
+-- Variable             ::= Name .
+
+
+-- LL(1):
+-- Programm             ::= Definition ";" { Definition ";"} .
+-- Definition           ::= Variable {Variable} "=" Ausdruck .
+-- Lokaldefinitionen    ::= Lokaldefinition { ";" Lokaldefinition } .
+-- Lokaldefinition      ::= Variable "=" Ausdruck .
+-- Ausdruck             ::= "let" Lokaldefinitionen "in" Ausdruck
+--                        | "if" Ausdruck "then" Ausdruck "else" Ausdruck
+--                        | Ausdruck Restausdruck
+--                        | UnärOp Ausdruck
+--                        | "(" Ausdruck ")"
+--                        | AtomarerAusdruck .
+-- Restausdruck         ::= Ausdruck | BinärOp Ausdruck
+-- BinärOp              ::= "&" | "|" | "==" | "<" | "+" | "−" | "∗" | "/" .
+-- UnärOp               ::= "not" | "−" .
+-- AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
+-- Variable             ::= Name .

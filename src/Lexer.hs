@@ -14,9 +14,6 @@ retokenize :: [Token] -> [Token]
 retokenize [] = []
 retokenize (x:xs:xss)
                 | x == TEQUAL && xs == TEQUAL = TBinOp BO_EQUAL : retokenize xss
-                | x == TBinOp BO_GREATER && xs == TEQUAL = TBinOp BO_GREATER_EQUAL : retokenize xss
-                | x == TBinOp BO_SMALLER && xs == TEQUAL = TBinOp BO_SMALLER_EQUAL : retokenize xss
-                | x == TBinOp BO_DIV && xs == TEQUAL = TBinOp BO_UNEQUAL : retokenize xss
                 | x == TLPAREN && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
 retokenize (x:xs) = x : retokenize xs
 
@@ -37,7 +34,7 @@ sliceToken word rest@(x:xs)
                 | x == ' ' = (word, xs)
                 | otherwise = sliceToken (word ++ [x]) xs
 
--- "+-*/();=><&|"
+-- "+-*/();=>&|"
 tokenize :: String -> Token
 tokenize "+" = TBinOp BO_PLUS
 tokenize "-" = TBinOp BO_MINUS
@@ -47,7 +44,6 @@ tokenize "(" = TLPAREN
 tokenize ")" = TRPAREN
 tokenize ";" = TSEMICOL 
 tokenize "=" = TEQUAL
-tokenize ">" = TBinOp BO_GREATER
 tokenize "<" = TBinOp BO_SMALLER
 tokenize "&" = TBinOp BO_AND
 tokenize "|" = TBinOp BO_OR

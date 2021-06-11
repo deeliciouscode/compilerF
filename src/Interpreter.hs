@@ -14,13 +14,20 @@ import Parser
 
 -- the output of each step is the input to the next one
 
-inputString = "foo = if 3 == 3 then 3 else 4; bar = 4; main = (foo + bar) * 4 - 134;"
+-- inputString = "foo = if 3 == 3 then 3 else 4; bar = 4; main = (foo + bar) * 4 - 134;"
+-- inputString = "foo = 3; bar = 4; main = (foo + bar) * 4 - 134;"
+-- inputString = "main = (2 + 10) * 4 - 134;"
+inputString = "main = (2 + 10) * 4;"
 
--- lexical analysis (Lexer)
-listOfTokens :: [Token]
-listOfTokens = genListOfTokens inputString
 
--- syntactic analysis (Parser)
+main :: IO ()
+main = do
+    -- lexical analysis (Lexer)
+    let listOfTokens = genListOfTokens inputString
+    print listOfTokens
+    -- syntactic analysis (Parser)
+    let err = parseProgram $ Right listOfTokens
+    print err
 
 -- semantic Analysis 
 
