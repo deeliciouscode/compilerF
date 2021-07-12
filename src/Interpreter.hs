@@ -1,7 +1,8 @@
 module Interpreter where
+
 import DataStructures
 import Lexer
-import Parser
+import Parser3
 
 -- F Spezifikationen (Skript Seite 61):
 -- Lokale Definitionen sind in F möglich, jedoch eingeschränkt auf Definitionen von Ausdrücken ohne Parameter (Wertedefinitionen).
@@ -19,17 +20,16 @@ import Parser
 -- inputString = "main = (2 + 10) * 4 - 134;"
 inputString = "main = (2 + 10) * 4;"
 
-
 main :: IO ()
 main = do
-    -- lexical analysis (Lexer)
-    let listOfTokens = genListOfTokens inputString
-    print listOfTokens
-    -- syntactic analysis (Parser)
-    let err = parseProgram $ Right listOfTokens
-    print err
+  -- lexical analysis (Lexer)
+  let listOfTokens = genListOfTokens inputString
+  print listOfTokens
+  -- syntactic analysis (Parser)
+  let err = parseProgram listOfTokens
+  print err
 
--- semantic Analysis 
+-- semantic Analysis
 
 -- code generation
 
@@ -37,3 +37,26 @@ main = do
 
 -- assembly (Assembler)
 
+-- a :: [Token] -> (Maybe AstA, [Token])
+-- a tokensRest0@(B : _) =
+--   case b tokensRest0 of
+--     (Nothing, tokensRest1) -> (Nothing, tokensRest1)
+--     (Just astB, tokensRest1) ->
+--       case c tokensRest1 of
+--         (Nothing, tokensRest2) -> (Nothing, tokensRest2)
+--         (Just astC, tokensRest2) -> (Just $ f astB astC, tokensRest2)
+-- a tokensRest0@(D : _) =
+--   case d tokensRest0 of
+--     (Nothing, tokensRest1) -> (Nothing, tokensRest1)
+--     (Just astD, tokensRest1) ->
+--       case e tokensRest1 of
+--         (Nothing, tokensRest2) -> (Nothing, tokensRest2)
+--         (Just astE, tokensRest2) -> (Just $ g astD astE, tokensRest2)
+-- a tokensRest0 = (Nothing, tokensRest0)
+
+-- f :: AstB -> AstC -> AstA
+-- g :: AstD -> AstE -> AstA
+-- b :: [Token] -> (Maybe AstB, [Token])
+-- c :: [Token] -> (Maybe AstC, [Token])
+-- d :: [Token] -> (Maybe AstD, [Token])
+-- e :: [Token] -> (Maybe AstE, [Token])
