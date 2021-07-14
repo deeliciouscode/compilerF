@@ -1,9 +1,9 @@
 -- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module Parser4 where
-import Relude
 
 -- import DataStructures
 import Helpers
+import Relude
 
 newtype InvalidSyntaxError = InvalidSyntaxError String
   deriving (Show)
@@ -25,39 +25,54 @@ data LocDef = LocDef Var Expr
 data Expr
   = LetIn LocDefs Expr
   | IfElseThen Expr Expr Expr
-  | Expr Expr1
+  | Or Expr Expr
+  | And Expr Expr
+  | Comp Expr Expr
+  | CompOp Expr Expr
+  | Plus Expr Expr
+  | Minus Expr Expr
+  | UnMinus Expr
+  | Times Expr Expr
+  | Divided Expr Expr
+  | Variable String
+  | Literal Int
+  | Bool Bool
 
-data Expr1 = Expr1 Expr2 RestExpr1
+data CompOp
+  = CompEq
+  | CompSmaller
 
-data RestExpr1 = RE1eps | OR Expr1
+-- data Expr1 = Expr1 Expr2 RestExpr1
 
-data Expr2 = Expr2 Expr3 RestExpr2
+-- data RestExpr1 = RE1eps | OR Expr1
 
-data RestExpr2 = RE2eps | AND Expr2
+-- data Expr2 = Expr2 Expr3 RestExpr2
 
-data Expr3 = Expr3 Expr4 RestExpr3
+-- data RestExpr2 = RE2eps | AND Expr2
 
-data RestExpr3 = RE3eps | CompOp CompOp Expr3
+-- data Expr3 = Expr3 Expr4 RestExpr3
 
-data Expr4 = Expr4 Expr5 RestExpr4
+-- data RestExpr3 = RE3eps | CompOp CompOp Expr3
 
-data RestExpr4 = RE4eps | Plus Expr5 | Minus Expr5
+-- data Expr4 = Expr4 Expr5 RestExpr4
 
-data Expr5 = Expr5 Expr6 | NegExpr5 Expr6
+-- data RestExpr4 = RE4eps | Plus Expr5 | Minus Expr5
 
-data Expr6 = Expr6 Expr7 RestExpr6
+-- data Expr5 = Expr5 Expr6 | NegExpr5 Expr6
 
-data RestExpr6 = RE6eps | Mult Expr7 | Div Expr7
+-- data Expr6 = Expr6 Expr7 RestExpr6
 
-data Expr7 = Expr7 AtomicExpr RestExpr7
+-- data RestExpr6 = RE6eps | Mult Expr7 | Div Expr7
 
-data RestExpr7 = RE7eps | RestAtomic Expr7
+-- data Expr7 = Expr7 AtomicExpr RestExpr7
 
-data AtomicExpr = AtomExpr AtomExpr | Parenthesised Expr
+-- data RestExpr7 = RE7eps | RestAtomic Expr7
+
+-- data AtomicExpr = AtomExpr AtomExpr | Parenthesised Expr
 
 {-
 data Token
-  = Number String 
+  = Number String
   | Plus
   | RoundBracketOpen
   | RoundBracketClose
@@ -68,7 +83,6 @@ data Expression
   | Addition Expression Expression
   deriving (Show)
 
-
 Backus–Naur form
 
 expression ::=
@@ -78,10 +92,6 @@ expression ::=
 restExpression ::= Plus expression | \epsilon
 
 -}
-
-data CompOp
-  = CompEq
-  | CompSmaller
 
 newtype Var = Name String
   deriving (Show, Eq)
@@ -99,7 +109,7 @@ data BinaryOp
 
 data UniOp
   = UO_NOT
-  | UO_MINUS
+  | UO_MINUSBool
   deriving (Show, Eq)
 
 data AtomExpr
@@ -131,15 +141,31 @@ data Context = CtxDef | CtxLocalDef | CtxOther
 type Parser token a = [token] -> (Maybe a, [token])
 
 expression :: Parser Token Expr
-expression (Number text : tokensRest0) =
+expression (T_LET : tokensRest0) =
+  case localDef tokensRest0 of
+    (Nothing, tokensRest1) -> (Nothing, tokensRest1)
+    (Just localDef, tokensRest1) ->
+      -- TODO: continue here 
+      (Just $ addExpression (Literal text) plusExpressionResult, tokensRest1)
+expression (T_IF : tokensRest0) =
   case plusExpression tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, tokensRest1)
-    (Just plusExpressionResult, tokensRest1) ->
+    (Just plusExpressionResult, tokensRest1) -> 
       (Just $ addExpression (Literal text) plusExpressionResult, tokensRest1)
-expression (RoundBracketOpen : tokensRest0) =
+expression (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
+  case plusExpression tokensRest0 of
+    (Nothing, tokensRest1) -> (Nothing, tokensRest1)
+    (Just plusExpressionResult, tokensRest1) -> 
+      (Just $ addExpression (Literal text) plusExpressionResult, tokensRest1)
+expression (TAtomExpr (T_BOOL bool) : tokensRest0) =
+  case plusExpression tokensRest0 of
+    (Nothing, tokensRest1) -> (Nothing, tokensRest1)
+    (Just plusExpressionResult, tokensRest1) -> 
+      (Just $ addExpression (Literal text) plusExpressionResult, tokensRest1)
+expression (TLPAREN : tokensRest0) =
   case expression tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, tokensRest1)
-    (Just expressionResult, RoundBracketClose : tokensRest1) ->
+    (Just expressionResult, TRPAREN : tokensRest1) ->
       case plusExpression tokensRest1 of
         (Nothing, tokensRest2) -> (Nothing, tokensRest2)
         (Just plusExpressionResult, tokensRest2) ->
@@ -176,21 +202,3 @@ test =
 
 main :: IO ()
 main = Relude.print test
-
-
--- ATTEMPT 4
-
--- parseExpr :: Either InvalidSyntaxError [Token] -> Either InvalidSyntaxError [Token]
--- parseExpr ctx (Left x) = Left x
--- parseExpr ctx (Right []) = Right []
--- parseExpr ctx (Right all@(T_LET : rest)) = parseLet ctx $ Right all
--- parseExpr ctx (Right all@(T_IN : rest)) = parseIn ctx $ Right all
--- parseExpr ctx (Right all@(T_IF : rest)) = parseIf ctx $ Right all -- TODO: continue here
--- parseExpr ctx (Right all@(T_ELSE : rest)) = parseElse ctx $ Right all
--- parseExpr ctx (Right all@(T_THEN : rest)) = parseThen ctx $ Right all
--- parseExpr CtxDef (Right (TSEMICOL : rest)) = CtxDef $ Right rest
--- parseExpr CtxLocalDef (Right (TSEMICOL : rest)) = parseLocalDefinitions CtxLocalDef $ Right rest
--- parseExpr ctx (Right (TAtomExpr _ : rest)) = parseExpr ctx $ Right rest
--- parseExpr ctx (Right (TLPAREN : rest)) = parseExpr ctx $ Right rest
--- parseExpr ctx (Right (TRPAREN : rest)) = parseExpr ctx $ Right rest
--- parseExpr ctx other = parseExpr1 ctx other

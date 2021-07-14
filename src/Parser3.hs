@@ -67,7 +67,10 @@ plusExpression tokens = (Just NoPlus, tokens)
 
 test =
   expression
-    [ Number "2",
+    [ 
+      RoundBracketOpen,
+      RoundBracketOpen,
+      Number "2",
       Plus,
       RoundBracketOpen,
       RoundBracketOpen,
@@ -75,6 +78,7 @@ test =
       RoundBracketClose,
       Plus,
       Number "5",
+      RoundBracketClose,
       RoundBracketClose
     ]
 
