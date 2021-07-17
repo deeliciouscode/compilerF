@@ -233,7 +233,8 @@ LocalDefinitions        ::= LocalDefinition RestLocalDefinitions
 RestLocalDefinitions    ::= \eps | ; LocalDefinitions
 
 LocalDefinition         ::= Var = Expression
-Expression              ::= let LocalDefinitions in Audruck |
+
+Expression              ::= let LocalDefinitions in Expression |
                             if Expression then Expression else Expression |
                             Expression1
 
@@ -251,13 +252,18 @@ RestExpression4         ::= \eps | + Expression5 | - Expression5
 
 Expression5             ::= Expression6 | - Expression6
 
+-- Alternative to Expression5
+-- Expression5             ::= RestExpression5 Expression6
+-- RestExpression5         ::= \eps | -
+
+
 Expression6             ::= Expression7 RestExpression6
 RestExpression6         ::= \eps | * Expression7 | / Expression7
 
 Expression7             ::= AtomicExpression RestExpression7
 RestExpression7         ::= \eps | Expression7
 
-AtomicExpression        ::= Var | Literal | ( Expression )
+AtomicExpression        ::= Var | Int | Bool | ( Expression )
 
 CompOp                  ::= == | <
 ```

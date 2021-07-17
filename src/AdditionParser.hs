@@ -26,7 +26,7 @@ Backus–Naur form
 
 expression ::=
   Number restExpression |
-  RoundBracketOpen restExpression RoundBracketClose restExpression
+  RoundBracketOpen expression RoundBracketClose restExpression
 
 restExpression ::= Plus expression | \epsilon
 
@@ -68,19 +68,22 @@ plusExpression tokens = (Just NoPlus, tokens)
 test =
   expression
     [ 
-      RoundBracketOpen,
-      RoundBracketOpen,
       Number "2",
       Plus,
-      RoundBracketOpen,
-      RoundBracketOpen,
-      Number "3",
-      RoundBracketClose,
-      Plus,
-      Number "5",
-      RoundBracketClose,
-      RoundBracketClose
+      Number "3"
     ]
+
+-- [ 
+--       Number "2",
+--       Plus,
+--       RoundBracketOpen,
+--       RoundBracketOpen,
+--       Number "3",
+--       RoundBracketClose,
+--       Plus,
+--       Number "5",
+--       RoundBracketClose
+--     ]
 
 main :: IO ()
 main = Relude.print test

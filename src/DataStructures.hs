@@ -1,28 +1,78 @@
 module DataStructures where
 
--- replicate syntax on page 62
 
-data Program = Prog Definition MoreDefinitions
-data MoreDefinitions = DEps | Program
+newtype InvalidSyntaxError = InvalidSyntaxError String
+  deriving (Show)
 
-data Definition = Def Var MultiVars Expr
-data MultiVars = VEps | More Var MultiVars
+data Prog = Prog Def RestProg
+  deriving (Show)
 
-data LocalDefs = LocDef LocalDef MoreLocalDefs 
-data MoreLocalDefs = LDEps | LocalDefs LocalDefs
+data RestProg = Deps | RProg Prog
+  deriving (Show)
 
-data LocalDef = LocalDef Variable Expr
+data Def = Def Var RestVars Expr
+  deriving (Show)
 
-data Var = Var
+data RestVars = Veps | RVars Var RestVars
+  deriving (Show)
+
+data LocDefs = LocDefs LocDef RestLocDefs
+  deriving (Show)
+
+data RestLocDefs = LDeps | RLocDefs LocDefs
+  deriving (Show)
+
+data LocDef = LocDef Var Expr
+  deriving (Show)
 
 data Expr
-  = Let LocalDef Expr
-  | If Expr Expr Expr
-  | BinExpr Expr BinaryOp Expr
-  | UniExpr UniOp Expr
-  | Twice Expr Expr
-  | Parenthesised Expr
-  | AtomExpr
+  = LetIn LocDefs Expr
+  | IfElseThen Expr Expr Expr
+  | Or Expr Expr
+  | And Expr Expr
+  | CompEq Expr Expr
+  | CompSmaller Expr Expr
+  | Plus Expr Expr
+  | Minus Expr Expr
+  | UnMinus Expr
+  | Times Expr Expr
+  | Divided Expr Expr
+  | Variable String
+  | Int Int
+  | Bool Bool
+  | Appl Expr Expr
+  deriving (Show)
+  
+data Expr1 = Expr1 Expr2 RestExpr1
+
+data RestExpr1 = RE1eps | OR Expr
+
+data Expr2 = Expr2 Expr3 RestExpr2
+
+data RestExpr2 = RE2eps | AND Expr
+
+data Expr3 = Expr3 Expr4 RestExpr3
+
+data RestExpr3 = RE3eps | CompEq' Expr | CompSmaller' Expr
+
+data Expr4 = Expr4 Expr5 RestExpr4
+
+data RestExpr4 = RE4eps | PLUS Expr | MINUS Expr
+
+data Expr5 = NotNeg | NegExpr5 Expr
+
+data Expr6 = Expr6 Expr7 RestExpr6
+
+data RestExpr6 = RE6eps | MULT Expr | DIV Expr
+
+data Expr7 = Expr7 AtomicExpr RestExpr7
+
+data RestExpr7 = RE7eps | FULL Expr
+
+data AtomicExpr = AtomExpr AtomExpr | Parenthesised Expr
+
+newtype Var = Name String
+  deriving (Show, Eq)
 
 data BinaryOp
   = BO_AND
@@ -41,12 +91,9 @@ data UniOp
   deriving (Show, Eq)
 
 data AtomExpr
-  = T_VAR Variable
+  = T_VAR Var
   | T_INT Int
   | T_BOOL Bool
-  deriving (Show, Eq)
-
-newtype Variable = Name String
   deriving (Show, Eq)
 
 data Token
@@ -68,68 +115,3 @@ data Token
 
 data Context = CtxDef | CtxLocalDef | CtxOther
   deriving (Show)
-
-
--- data SyntaxGraph
-
--- EBNF Meta Grammar
-
--- data Grammar = Prod Produktion |
-
--- Make LL(1) Grammar
-
--- ORIGINAL:
--- Programm             ::= Definition ";" { Definition ";"} .
--- Definition           ::= Variable {Variable} "=" Ausdruck .
--- Lokaldefinitionen    ::= Lokaldefinition { ";" Lokaldefinition } .
--- Lokaldefinition      ::= Variable "=" Ausdruck .
--- Ausdruck             ::= "let" Lokaldefinitionen "in" Ausdruck
---                        | "if" Ausdruck "then" Ausdruck "else" Ausdruck
---                        | Ausdruck BinärOp Ausdruck
---                        | UnärOp Ausdruck
---                        | Ausdruck Ausdruck
---                        | "(" Ausdruck ")"
---                        | AtomarerAusdruck .
--- BinärOp              ::= "&" | "|" | "==" | "<" | "+" | "−" | "∗" | "/" .
--- UnärOp               ::= "not" | "−" .
--- AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
--- Variable             ::= Name .
-
--- abstract form:
--- P ::= Ds | DsD
--- D ::= VeA | VV
--- A ::= lLiA | iAtAeA | AbA |
-
--- LL(1):
--- Programm             ::= Definition ";" { Definition ";"} .
--- Definition           ::= Variable {Variable} "=" Ausdruck .
--- Lokaldefinitionen    ::= Lokaldefinition { ";" Lokaldefinition } .
--- Lokaldefinition      ::= Variable "=" Ausdruck .
--- Ausdruck             ::= "let" Lokaldefinitionen "in" Ausdruck
---                        | "if" Ausdruck "then" Ausdruck "else" Ausdruck
---                        | Ausdruck Restausdruck
---                        | UnärOp Ausdruck
---                        | "(" Ausdruck ")"
---                        | AtomarerAusdruck .
--- Restausdruck         ::= Ausdruck | BinärOp Ausdruck
--- BinärOp              ::= "&" | "|" | "==" | "<" | "+" | "−" | "∗" | "/" .
--- UnärOp               ::= "not" | "−" .
--- AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
--- Variable             ::= Name .
-
--- LL(1) Wrong:
--- Programm             ::= Definition ";" { Definition ";"} .
--- Definition           ::= Variable {Variable} "=" Ausdruck .
--- Lokaldefinitionen    ::= Lokaldefinition { ";" Lokaldefinition } .
--- Lokaldefinition      ::= Variable "=" Ausdruck .
--- Ausdruck             ::= "let" Lokaldefinitionen "in" Ausdruck
---                        | "if" Ausdruck "then" Ausdruck "else" Ausdruck
---                        | Ausdruck Restausdruck
---                        | UnärOp Ausdruck
---                        | "(" Ausdruck ")"
---                        | AtomarerAusdruck .
--- Restausdruck         ::= Ausdruck | BinärOp Ausdruck
--- BinärOp              ::= "&" | "|" | "==" | "<" | "+" | "−" | "∗" | "/" .
--- UnärOp               ::= "not" | "−" .
--- AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
--- Variable             ::= Name .
