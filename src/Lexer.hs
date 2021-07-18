@@ -55,7 +55,7 @@ tokenize "if" = T_IF
 tokenize "then" = T_THEN 
 tokenize "else" = T_ELSE 
 tokenize other 
-            | isJust (readMaybe other :: Maybe Int) = TAtomExpr $ T_INT (read other)
             | isJust (readMaybe other :: Maybe Bool) = TAtomExpr $ T_BOOL (read other)
+            | isJust (readMaybe other :: Maybe Int) = TAtomExpr $ T_INT (read other)
 tokenize var = TAtomExpr $ T_VAR $ Name var
 -- tokenize _ = TNULL

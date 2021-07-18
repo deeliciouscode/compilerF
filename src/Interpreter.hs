@@ -2,7 +2,9 @@ module Interpreter where
 
 import DataStructures
 import Lexer
-import Parser3
+import Parser
+import Data.Text
+import Relude
 
 -- F Spezifikationen (Skript Seite 61):
 -- Lokale Definitionen sind in F möglich, jedoch eingeschränkt auf Definitionen von Ausdrücken ohne Parameter (Wertedefinitionen).
@@ -18,16 +20,26 @@ import Parser3
 -- inputString = "foo = if 3 == 3 then 3 else 4; bar = 4; main = (foo + bar) * 4 - 134;"
 -- inputString = "foo = 3; bar = 4; main = (foo + bar) * 4 - 134;"
 -- inputString = "main = (2 + 10) * 4 - 134;"
-inputString = "main = (2 + 10) * 4;"
+-- inputString = "main = (2 + 10) * 4;"
+inputString = "let a = True in if a then 69 else 420;"
+-- NOTE: Up untill now we can only parse Expressions.
 
-main :: IO ()
-main = do
+dynamic :: IO ()
+dynamic = do 
+    Relude.putStrLn "Type an expression to parse: "
+    string <- Relude.getLine
+    let lexed = genListOfTokens $ unpack string in
+        let parsed = parseExpression lexed in 
+            Relude.print parsed
+
+static :: IO ()
+static = do
   -- lexical analysis (Lexer)
   let listOfTokens = genListOfTokens inputString
-  print listOfTokens
+  Relude.print listOfTokens
   -- syntactic analysis (Parser)
-  let err = parseProgram listOfTokens
-  print err
+  let err = parseExpression listOfTokens
+  Relude.print err
 
 -- semantic Analysis
 
@@ -36,6 +48,38 @@ main = do
 -- code optimization (not necessary)
 
 -- assembly (Assembler)
+
+
+
+
+-----------------------------------------------------------------------------
+
+-- let a=3; b=2; c=4 in a+b+c; 
+
+-- (Just 
+--    (LetIn 
+--      (LocDefs 
+--        (LocDef (Name "a") (Int 3)) 
+--        (RLocDefs 
+--          (LocDefs 
+--            (LocDef (Name "b") (Int 2)) 
+--            (RLocDefs 
+--              (LocDefs 
+--                (LocDef (Name "c") (Int 4)) 
+--                LDeps))))) 
+--      (Plus 
+--        (Variable "a") 
+--        (Plus 
+--          (Variable "b") 
+--          (Variable "c"))))
+
+
+-----------------------------------------------------------------------------
+
+
+
+
+-- Basic Structure of a Parser
 
 -- a :: [Token] -> (Maybe AstA, [Token])
 -- a tokensRest0@(B : _) =

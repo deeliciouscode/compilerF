@@ -43,6 +43,8 @@ data Expr
   | Appl Expr Expr
   deriving (Show)
   
+data EndToken = EndToken
+
 data Expr1 = Expr1 Expr2 RestExpr1
 
 data RestExpr1 = RE1eps | OR Expr
@@ -111,6 +113,7 @@ data Token
   | TNULL
   | TSEMICOL
   | TEQUAL
+  | Error String
   deriving (Show, Eq)
 
 data Context = CtxDef | CtxLocalDef | CtxOther
