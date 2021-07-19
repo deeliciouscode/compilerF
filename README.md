@@ -1,4 +1,5 @@
-# A compiler for the language F in context of the course "Implementierung von Programmiersprachen" at LMU University.
+# A compiler for the language F 
+## In context of the course "Implementierung von Programmiersprachen" at LMU University.
 
 ## Definitions
 
