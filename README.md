@@ -1,4 +1,4 @@
-# ImProg_language_f
+# A compiler for the language F in context of the course "Implementierung von Programmiersprachen" at LMU University.
 
 ## Definitions
 
