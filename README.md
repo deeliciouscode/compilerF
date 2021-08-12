@@ -225,7 +225,7 @@ comparisonOperator  ::= == | <
 Von Phillip Angepasst:
 ```
 Program                 ::= Definition ; RestProgramm
-RestProgramm            ::= \eps | Definition ;
+RestProgramm            ::= \eps | Program ;
 
 Definition              ::= Var RestVars = Expression
 RestVars                ::= \eps | Var RestVars
@@ -268,3 +268,5 @@ AtomicExpression        ::= Var | Int | Bool | ( Expression )
 
 CompOp                  ::= == | <
 ```
+
+-----------------------------------------------------------------

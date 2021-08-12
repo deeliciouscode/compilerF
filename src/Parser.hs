@@ -3,12 +3,56 @@ module Parser where
 
 import Relude
 import Data.Text
+import Data.Maybe
 
 import Helpers
 import Lexer
 import DataStructures
 
 type Parser token a = [token] -> (Maybe a, [token])
+
+-- data Prog = Prog Def RestProg
+--   deriving (Show)
+
+-- data RestProg = Deps | RProg Prog
+--   deriving (Show)
+
+------------------------------- PROGRAM -------------------------------
+
+parseProgram :: Parser Token Prog 
+parseProgram tokens = 
+  case parseDefinition tokens of
+    (Nothing, tokensRest0) -> (Nothing, Error "parseProgram returned Nothing" : tokensRest0)
+    (Just def, tokens) -> (Just (Prog def (fromJust (fst (parseRestProgram tokens)))), [])
+
+parseRestProgram :: Parser Token RestProg
+parseRestProgram [] = (Just Deps, [])
+parseRestProgram tokens = (Just (RProg (fromJust (fst restProg))), snd restProg)
+                where restProg = parseProgram tokens
+
+------------------------------- DEFINITION -------------------------------
+
+parseDefinition :: Parser Token Def
+parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) = 
+  case parseRestVars tokensRest0 of
+    (Nothing, tokensRest1) -> (Nothing, Error "parseDefinition returned Nothing (in parseExpression, LET case)" : tokensRest1)
+    (Just restVars, tokensRest1) ->
+      case parseEqualSign tokensRest1 of 
+        (Nothing, tokensRest2) -> (Nothing, Error "parseDefinition returned Nothing (in parseExpression, LET case)" : tokensRest2)
+        (Just TEQUAL, tokensRest2) ->
+          case parseExpression tokensRest2 of
+            (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseDefinition, Atom case)" : tokensRest3)
+            (Just expr, tokensRest3) -> (Just (Def (Name name) restVars expr), tokensRest3)
+        (Just _, tokensRest2) -> (Nothing, Error "parseEqualSign returned something other than TEQUAL (in parseDefinition, Atom case)" : tokensRest2)
+parseDefinition tokens = (Nothing, Error "parseDefinition was called with the following unsupported token: " : tokens)
+
+parseRestVars :: Parser Token RestVars 
+parseRestVars (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (RVars (Name name) (fromJust (fst restVars))), snd restVars)
+              where restVars = parseRestVars tokensRest0
+parseRestVars all@(TEQUAL : tokensRest0) = (Just Veps, all)  
+parseRestVars tokens = (Nothing, Error "parseRestVars was called with the following unsupported token: " : tokens)  
+
+------------------------------- EXPRESIONS -------------------------------
 
 parseExpression :: Parser Token Expr
 parseExpression (T_LET : tokensRest0) =
@@ -93,7 +137,6 @@ checkForEndToken all@(TSEMICOL : tokensRest0) = (Just EndToken, tokensRest0)
 checkForEndToken all@(T_THEN : tokensRest0) = (Just EndToken, tokensRest0)
 checkForEndToken all@(T_ELSE : tokensRest0) = (Just EndToken, tokensRest0)
 checkForEndToken tokens = (Nothing, tokens)
-
 
 ---------------------------- EXPRESSION 1 - 7 ----------------------------
 
