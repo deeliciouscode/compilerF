@@ -270,3 +270,29 @@ CompOp                  ::= == | <
 ```
 
 -----------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------
+
+a = 1; b = 2; c = 3; result = a + b - c;
+
+
+(Prog 
+    (Def 
+        (Name "a") 
+        Veps 
+        (Int 1)) 
+(RProg 
+    (Prog 
+        (Def 
+            (Name "b") 
+            Veps 
+            (Int 2)) 
+        (RProg 
+            (Prog (Def (Name "c") Veps (Int 3)) (RProg 
+(Prog (Def (Name "result") Veps 
+    (Plus (Variable "a") 
+    (Minus (Variable "b") 
+    (Variable "c")))
+    ) Deps)))))))
