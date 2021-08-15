@@ -143,18 +143,15 @@ parseRest4 tokens = (Just RE4eps, tokens)
 
 ----------------------------------------------------------------------------------------
 
--- parseExpr5 :: Parser Token  Expr5
--- parseExpr5 tokens = 
---   case parseExpr6 tokens of
---     (Nothing, rest) -> (Nothing, Error "parseExpr1 returned Nothing" : rest)
---     (Just expr6, tokensRest) -> (Just (Expr5 expr6 (fromJust (fst restExpr5))), snd restExpr5)
---                   where restExpr5 = parseRest4 tokensRest
-
-parseExpr5 :: Parser Token Expr5
-parseExpr5 (TUniOp UO_MINUS : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (NegExpr5 <$> expr, tokensRest1)
-parseExpr5 tokens = (Just NotNeg, tokens)
+parseExpr5 :: Parser Token  Expr5
+parseExpr5 all@(TUniOp UO_MINUS : tokensRest0) =
+  case parseExpr6 tokensRest0 of
+    (Nothing, tokensRest1) -> (Nothing, Error "parseExpr6 returned Nothing (Neg Case)" : tokensRest1)
+    (Just expr6, tokensRest1) -> (Just (NegExpr5 expr6), tokensRest1)
+parseExpr5 tokens = 
+  case parseExpr6 tokens of
+    (Nothing, rest) -> (Nothing, Error "parseExpr6 returned Nothing (Pos Case)" : rest)
+    (Just expr6, tokensRest) -> (Just (PosExpr5 expr6), tokensRest)
 
 ----------------------------------------------------------------------------------------
 

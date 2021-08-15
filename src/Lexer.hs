@@ -6,6 +6,9 @@ import DataStructures
 import Helpers
 
 
+-- FIX unär minus bug 
+-- genListOfTokens "a = 1; b = -2; add a b = a + b; applied = add a b;" -> the -2 is not recognized
+
 genListOfTokens :: String -> [Token]
 genListOfTokens str = retokenize $ dialex str
 

@@ -76,7 +76,7 @@ data Expr4 = Expr4 Expr5 RestExpr4
 data RestExpr4 = RE4eps | PLUS Expr | MINUS Expr
   deriving (Show)
 
-data Expr5 = NotNeg | NegExpr5 Expr
+data Expr5 = PosExpr5 Expr6 | NegExpr5 Expr6
   deriving (Show)
 
 data Expr6 = Expr6 Expr7 RestExpr6

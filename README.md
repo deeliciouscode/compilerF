@@ -271,9 +271,7 @@ CompOp                  ::= == | <
 
 -----------------------------------------------------------------
 
-
-
------------------------------------------------------------------
+### OLD:
 
 a = 1; b = 2; c = 3; result = a + b - c;
 
@@ -296,3 +294,10 @@ a = 1; b = 2; c = 3; result = a + b - c;
     (Minus (Variable "b") 
     (Variable "c")))
     ) Deps)))))))
+
+----------------------------------------------------------------
+
+Just (Prog (Def (Name "a") Veps (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) (RProg (Prog (Def (Name "b") Veps (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 2)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) (RProg (Prog (Def (Name "add") (RVars (Name "a") (RVars (Name "b") Veps)) (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "a"))) RE7eps) RE6eps)) (PLUS (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "b"))) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps)))) RE3eps) RE2eps) RE1eps))) (RProg (Prog (Def (Name "applied") Veps (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "add"))) (App (Expr7 (AtomExpr (T_VAR (Name "a"))) (App (Expr7 (AtomExpr (T_VAR (Name "b"))) RE7eps))))) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) Deps)))))))
+
+
+----------------------------------------------------------------
