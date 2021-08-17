@@ -4,7 +4,7 @@ import DataStructures
 import Lexer
 import Parser
 import Data.Text
-import Relude
+-- import Relude
 
 -- F Spezifikationen (Skript Seite 61):
 -- Lokale Definitionen sind in F möglich, jedoch eingeschränkt auf Definitionen von Ausdrücken ohne Parameter (Wertedefinitionen).
@@ -26,20 +26,20 @@ inputString = "let a = True in if a then 69 else 420;"
 
 dynamic :: IO ()
 dynamic = do 
-    Relude.putStrLn "Type an expression to parse: "
-    string <- Relude.getLine
-    let lexed = genListOfTokens $ unpack string in
+    putStrLn "Type an expression to parse: "
+    string <- getLine
+    let lexed = genListOfTokens string in
         let parsed = parseExpression lexed in 
-            Relude.print parsed
+            print parsed
 
 static :: IO ()
 static = do
   -- lexical analysis (Lexer)
   let listOfTokens = genListOfTokens inputString
-  Relude.print listOfTokens
+  print listOfTokens
   -- syntactic analysis (Parser)
   let err = parseExpression listOfTokens
-  Relude.print err
+  print err
 
 -- semantic Analysis
 

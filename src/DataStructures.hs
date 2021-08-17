@@ -1,19 +1,18 @@
 module DataStructures where
 
-
 newtype InvalidSyntaxError = InvalidSyntaxError String
   deriving (Show)
 
 data Prog = Prog Def RestProg
-  deriving (Show)
+  deriving (Show) 
 
 data RestProg = Deps | RProg Prog
   deriving (Show)
 
-data Def = Def Var RestVars Expr
+data Def = Def Var Args Expr
   deriving (Show)
 
-data RestVars = Veps | RVars Var RestVars
+data Args = Veps | RVars Var Args
   deriving (Show)
 
 data LocDefs = LocDefs LocDef RestLocDefs
@@ -24,28 +23,10 @@ data RestLocDefs = LDeps | RLocDefs LocDefs
 
 data LocDef = LocDef Var Expr
   deriving (Show)
-
--- data Expr
---   = LetIn LocDefs Expr
---   | IfElseThen Expr Expr Expr
---   | Or Expr Expr
---   | And Expr Expr
---   | CompEq Expr Expr
---   | CompSmaller Expr Expr
---   | Plus Expr Expr
---   | Minus Expr Expr
---   | UnMinus Expr
---   | Times Expr Expr
---   | Divided Expr Expr
---   | Variable String
---   | Int Int
---   | Bool Bool
---   | Appl Expr Expr
---   deriving (Show)
   
 data Expr
   = LetIn LocDefs Expr
-  | IfElseThen Expr Expr Expr
+  | IfThenElse Expr Expr Expr
   | Expr1' Expr1
   deriving (Show)
 
@@ -97,6 +78,8 @@ data AtomicExpr = AtomExpr AtomExpr | Parenthesised Expr
 newtype Var = Name String
   deriving (Show, Eq)
 
+--------------------------------------------------------
+
 data BinaryOp
   = BO_AND
   | BO_OR
@@ -136,6 +119,3 @@ data Token
   | TEQUAL
   | Error String
   deriving (Show, Eq)
-
-data Context = CtxDef | CtxLocalDef | CtxOther
-  deriving (Show)
