@@ -7,7 +7,7 @@
 
 module Parser3 where
 
-import Relude
+-- import Relude
 
 data Token
   = Number String 
@@ -86,6 +86,6 @@ test =
 --     ]
 
 main :: IO ()
-main = Relude.print test
+main = print test
 
 -- $> ArithmeticParserVerbose.main

@@ -1,7 +1,7 @@
 -- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module Parser where
 
-import Relude
+-- import Relude
 import Data.Text
 import Data.Maybe
 
@@ -28,23 +28,23 @@ parseRestProgram tokens = (Just (RProg (fromJust (fst restProg))), snd restProg)
 
 parseDefinition :: Parser Token Def
 parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
-  case parseRestVars tokensRest0 of
+  case parseArgs tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseDefinition returned Nothing (in parseExpression, LET case)" : tokensRest1)
-    (Just restVars, tokensRest1) ->
+    (Just args, tokensRest1) ->
       case parseEqualSign tokensRest1 of
         (Nothing, tokensRest2) -> (Nothing, Error "parseDefinition returned Nothing (in parseExpression, LET case)" : tokensRest2)
         (Just TEQUAL, tokensRest2) ->
           case parseExpression tokensRest2 of
             (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseDefinition, Atom case)" : tokensRest3)
-            (Just expr, tokensRest3) -> (Just (Def (Name name) restVars expr), tokensRest3)
+            (Just expr, tokensRest3) -> (Just (Def (Name name) args expr), tokensRest3)
         (Just _, tokensRest2) -> (Nothing, Error "parseEqualSign returned something other than TEQUAL (in parseDefinition, Atom case)" : tokensRest2)
 parseDefinition tokens = (Nothing, Error "parseDefinition was called with the following unsupported token: " : tokens)
 
-parseRestVars :: Parser Token RestVars
-parseRestVars (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (RVars (Name name) (fromJust (fst restVars))), snd restVars)
-              where restVars = parseRestVars tokensRest0
-parseRestVars all@(TEQUAL : tokensRest0) = (Just Veps, all)
-parseRestVars tokens = (Nothing, Error "parseRestVars was called with the following unsupported token: " : tokens)
+parseArgs :: Parser Token Args
+parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (RVars (Name name) (fromJust (fst args))), snd args)
+              where args = parseArgs tokensRest0
+parseArgs all@(TEQUAL : tokensRest0) = (Just Veps, all)
+parseArgs tokens = (Nothing, Error "parseArgs was called with the following unsupported token: " : tokens)
 
 ------------------------------- EXPRESIONS -------------------------------
 
@@ -67,7 +67,7 @@ parseExpression (T_IF : tokensRest0) =
           case parseExpression tokensRest2 of
             (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, ELSE case)" : tokensRest3)
             (Just thirdExpressionResult, tokensRest3) ->
-              (Just $ IfElseThen firstExpressionResult secondExpressionResult thirdExpressionResult, tokensRest3)
+              (Just $ IfThenElse firstExpressionResult secondExpressionResult thirdExpressionResult, tokensRest3)
 -- I guess we have to stuff in parenthesised expresions somewhere here
 -- actually it has to be implemented in parseExpr7, most likely
 parseExpression tokens =
@@ -189,40 +189,19 @@ parseRest7 all@(next : tokens)
                         (Nothing, tokensRest) -> (Nothing, Error "Error in parseRest7: " : tokensRest)
                         (expr7, tokensRest) -> (App <$> expr7, tokensRest)
 
-  -- case parseExpr7 tokens of
-  --   (expr7, tokensRest) -> (App <$> expr7, tokensRest) 
-
 ----------------------------------------------------------------------------------------
-
--- data Token
---   = TAtomExpr AtomExpr
---   | TBinOp BinaryOp
---   | TUniOp UniOp
---   | T_MAIN
---   | T_LET
---   | T_IN
---   | T_IF
---   | T_THEN
---   | T_ELSE
---   | TLPAREN
---   | TRPAREN
---   | TNULL
---   | TSEMICOL
---   | TEQUAL
---   | Error String
 
 isOperator :: Token -> Bool 
 isOperator (TBinOp op)  = True 
 isOperator (TUniOp op)  = True
 isOperator _            = False  
 
-
 ----------------------------------------------------------------------------------------
 
 parseAtomicExpr :: Parser Token  AtomicExpr
 parseAtomicExpr (TAtomExpr atomExpr : tokensRest) =
   (Just (AtomExpr atomExpr), tokensRest)
-parseAtomicExpr tokens = (Nothing, Error "parseRestVars was called with the following unsupported token: " : tokens)
+parseAtomicExpr tokens = (Nothing, Error "parseAtomicExpr was called with the following unsupported token: " : tokens)
 -- parseAtomicExpr (TLPAREN : tokensRest) = ()
 -- parseAtomicExpr tokens = 
 --   case parseAtomicExpr tokens of
