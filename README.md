@@ -49,180 +49,31 @@ AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
 Variable             ::= Name .
 ```
 
-Backus Naur Form Remove Left Recursion of F:
+Provided by Philip
 ```
-Programm             ::= Definition ";" { Definition ";"} .
-First(Programm) = {}
+Program ::= Definition ; {Definition ;}
+Definition ::= Variable {Variable} = Expression
+LocalDefinitions ::= LocalDefinition {; LocalDefinition}
+LocalDefinition ::= Variable = Expression
+Expression ::=
+                let LocalDefinitions in Expression |
+                if Expression then Expression else Expression |
+                Expression1
 
-Definition           ::= Variable {Variable} "=" Ausdruck .
-Lokaldefinitionen    ::= Lokaldefinition { ";" Lokaldefinition } .
-Lokaldefinition      ::= Variable "=" Ausdruck .
-Ausdruck             ::= "let" Lokaldefinitionen "in" Ausdruck
-                       | "if" Ausdruck "then" Ausdruck "else" Ausdruck
-                       | Ausdruck BinärOp Ausdruck
-                       | UnärOp Ausdruck
-                       | Ausdruck Ausdruck
-                       | "(" Ausdruck ")"
-                       | AtomarerAusdruck .
-BinärOp              ::= "&" | "|" | "==" | "<" | "+" | "−" | "∗" | "/" .
-UnärOp               ::= "not" | "−" .
-AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
-Variable             ::= Name .
-```
-
-Abstract Form:
-```
-P   ->  D ";" | D ";" P
-D   ->  V D | V "=" A
-LDN ->  LD | LD ";" LDN
-LD  ->  V "=" A
-A   ->  "let" LDN "in" A 
-    |   "if" A "then" A "else" A 
-    |   A B A 
-    |   U A 
-    |   A A 
-    |   "(" A ")"
-    |   AA
-B   ->  "&" 
-    |   "|" 
-    |   "=="
-    |   "<"
-    |   "+"
-    |   "-"
-    |   "*"
-    |   "/"
-U   ->  "not" |   "-"
-AA  ->  V | Z | W
-V   ->  N
+Expression1 ::= Expression2 {| Expression2}
+Expression2 ::= Expression3 {& Expression3}
+Expression3 ::= Expression4 [ComparisonOperator Expression4]
+Expression4 ::= Expression5 RestExpression4
+RestExpression4 ::= {+ Expression5} | - Expression5
+Expression5 ::= [-] Expression6
+Expression6 ::= Expression7 RestExpression6
+RestExpression6 ::= {* Expression7} | / Expression7
+Expression7 ::= AtomicExpression {AtomicExpression}
+AtomicExpression ::= Variable | Literal | ( Expression )
+ComparisonOperator ::= == | <
 ```
 
-P solved
-```
-P -> D; P -> D; D; P -> D; D; D;
-since \eps is nothing, these are equal
-P -> D; MD -> D; P -> D; D; MD -> D; D; P -> D; D; D; MD -> D; D; D; \eps
-```
-
-D solved
-```
-D -> V D -> V V D -> V V V D -> V V V V "=" A
-since \eps is nothing, these are equal
-D -> V MV "=" A -> V V MV "=" A -> A -> V V V MV "=" A -> V V V V MV "=" A -> V V V V \eps "=" A
-```
-
-A solved
-```
-A -> A B A -> "let" LDN "in" A B A -> "let" LDN "in" U A B A ->
-"let" LDN "in" U A B A A -> "let" LDN "in" U A / A A -> 
-since \eps is nothing, these are equal
-A -> "let" LDN "in" A RA -> "let" LDN "in" A B A RA -> "let" LDN "in" U A RA B A RA -> "let" LDN "in" U A \eps B A RA -> "let" LDN "in" U A \eps B A A RA -> "let" LDN "in" U A \eps B A A \eps -> "let" LDN "in" U A \eps / A A \eps
-```
-
-Without Left Recursion:
-```
-P   ->  D ";" MD
-MD  ->  \eps | P
-
-D   ->  V MV "=" A
-MV  -> \eps | V MV
-
-LDN ->  LD MLD
-MLD -> \eps | ";" LD MLD
-
-LD  ->  V "=" A
-
-A   ->  "let" LDN "in" A RA
-    |   "if" A "then" A "else" A RA 
-    |   U A RA
-    |   "(" A ")" RA
-RA  -> \eps | B A RA | A RA 
-
-B   ->  "&" 
-    |   "|" 
-    |   "=="
-    |   "<"
-    |   "+"
-    |   "-"
-    |   "*"
-    |   "/"
-U   ->  "not" |   "-"
-AA  ->  V | Z | W
-V   ->  N
-```
-
-Without Left Recursion:
-```
-Programm                ->  Definition ";" RestProgramm
-RestProgramm            ->  \eps | Programm
-
-Definition              ->  Variable MultiVariablen "=" Ausdruck
-MultiVariablen          ->  \eps | Variable MultiVariablen
-
-Lokaldefinitionen       ->  Lokaldefinition RestLokaldefinitionen
-RestLokaldefinitionen   ->  \eps | ";" Lokaldefinition RestLokaldefinitionen
-
-Lokaldefinition         ->  Variable "=" Ausdruck
-
-Ausdruck                ->  "let" Lokaldefinitionen "in" Ausdruck RestAusdruck
-                        |   "if" Ausdruck "then" Ausdruck "else" Ausdruck RestAusdruck 
-                        |   UnärOp Ausdruck RestAusdruck
-                        |   "(" Ausdruck ")" RestAusdruck
-                        |   AtomarerAusdruck RestAusdruck
-
-RestAusdruck            ->  \eps 
-                        |   BinärOp Ausdruck RestAusdruck 
-                        |   Ausdruck RestAusdruck
-
-BinärOp                 ->  "&" 
-                        |   "|" 
-                        |   "=="
-                        |   "<"
-                        |   "+"
-                        |   "-"
-                        |   "*"
-                        |   "/"
-
-UnärOp                  ->  "not" 
-                        |   "-"
-
-AtomarerAusdruck        ->  Variable 
-                        |   Zahl 
-                        |   Wahrheitswert
-
-Variable                ->  Name
-```
-
-Von Phillip:
-```
-program             ::= definition ; {definition ;}
-definition          ::= Variable {Variable} = expression
-localDefinitions    ::= localDefinition {; localDefinition}
-localDefinition     ::= Variable = expression
-expression          ::=
-                        Let localDefinitions In audruck |
-                        If expression Then expression Else expression |
-                        expression1
-
-expression1         ::= expression2 restExpression1
-restExpression1     ::= "|" expression1 | \epsilon
-expression2         ::= expression3 restExpression2
-restExpression2     ::= & expression2 | \epsilon
-expression3         ::= expression4
-expression4         ::= expression5 restExpression4
-restExpression4     ::= comparisonOperator expression5 | \epsilon
-expression5         ::= expression6
-expression6         ::= expression7 restExpression6
-restExpression6     ::= - expression7 | {+ expression7}
-expression7         ::= expression8 restExpression7
-restExpression7     ::= / expression8 | {* expression7}
-expression8         ::= atomicExpression {atomicExpression}
-
-atomicExpression    ::= Variable | Literal | ( expression )
-
-comparisonOperator  ::= == | <
-```
-
-Von Phillip Angepasst:
+Provided by Phillip modified:
 ```
 Program                 ::= Definition ; RestProgramm
 RestProgramm            ::= \eps | Program ;
@@ -240,13 +91,13 @@ Expression              ::= let LocalDefinitions in Expression |
                             Expression1
 
 Expression1             ::= Expression2 RestExpression1
-RestExpression1         ::= \eps | "|" Expression1
+RestExpression1         ::= \eps | "|" Expression2
 
 Expression2             ::= Expression3 RestExpression2
-RestExpression2         ::= \eps | & Expression2
+RestExpression2         ::= \eps | & Expression3
 
 Expression3             ::= Expression4 RestExpression3
-RestExpression3         ::= \eps | CompOp Expression3
+RestExpression3         ::= \eps | CompOp Expression4
 
 Expression4             ::= Expression5 RestExpression4
 RestExpression4         ::= \eps | + Expression5 | - Expression5
@@ -257,7 +108,7 @@ Expression6             ::= Expression7 RestExpression6
 RestExpression6         ::= \eps | * Expression7 | / Expression7
 
 Expression7             ::= AtomicExpression RestExpression7
-RestExpression7         ::= \eps | Expression7
+RestExpression7         ::= \eps | AtomicExpression
 
 AtomicExpression        ::= Var | Int | Bool | ( Expression )
 
@@ -265,139 +116,60 @@ CompOp                  ::= == | <
 ```
 
 -----------------------------------------------------------------
-"1 + 2 * 3;"
 
-Just 
- (Expr1' 
-  (Expr1 
-    (Expr2 
-     (Expr3 
-      (Expr4 
-       (PosExpr5 
-        (Expr6 
-         (Expr7 
-          (AtomExpr (T_INT 1)) 
-         RE7eps) 
-        RE6eps)) 
-      (PLUS
-       (Expr1' 
-        (Expr1 
-         (Expr2 
-          (Expr3 
-           (Expr4 
-            (PosExpr5 
-             (Expr6 
-              (Expr7 
-               (AtomExpr (T_INT 2)) 
-              RE7eps) 
-           (MULT 
-            (Expr1' 
-             (Expr1 
-              (Expr2 
-               (Expr3 
-                (Expr4 
-                 (PosExpr5 
-                  (Expr6 
-                   (Expr7 
-                    (AtomExpr (T_INT 3)) 
-                   RE7eps) 
-                  RE6eps)) 
-                RE4eps) 
-               RE3eps) 
-              RE2eps) 
-             RE1eps))))) 
-           RE4eps) 
-          RE3eps) 
-         RE2eps) 
-        RE1eps)))) 
-     RE3eps) 
-    RE2eps) 
-   RE1eps))
+## Some evaluations of the current state
 
 -----------------------------------------------------------------
 
-"1 * 2 + 3;"
+"(1 + 2) * 3;"
 
 Just 
-(Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) 
-(MULT (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 2)) RE7eps) RE6eps)) 
-(PLUS (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 3)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps)))) RE3eps) RE2eps) RE1eps))))) RE4eps) RE3eps) RE2eps) RE1eps))
+(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 
+(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) RE6eps)) 
+(PLUS (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 2)) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))) RE7eps) 
+(MULT (Expr7 (AtomExpr (T_INT 3)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))
 
------------------------------------------------------------------
+------------------------------------------------------------------
 
-"1 + 2 * 3;"
+"(foo bar) 1 * 3;"
 
-Just 
-(Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) RE6eps)) 
-(PLUS (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 2)) RE7eps) 
-(MULT (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 3)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))))) RE4eps) RE3eps) RE2eps) RE1eps)))) RE3eps) RE2eps) RE1eps))
+(Just 
+(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 
+(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "foo"))) 
+(App (Expr7 (AtomExpr (T_VAR (Name "bar"))) RE7eps))) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) 
+(App (Expr7 (AtomExpr (T_INT 1)) RE7eps))) 
+(MULT (Expr7 (AtomExpr (T_INT 3)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps)),[])
 
------------------------------------------------------------------
+------------------------------------------------------------------
 
-
-
-### OLD:
-
-a = 1; b = 2; c = 3; result = a + b - c;
-
-
-(Prog 
-    (Def 
-        (Name "a") 
-        Aeps 
-        (Int 1)) 
-(RProg 
-    (Prog 
-        (Def 
-            (Name "b") 
-            Aeps 
-            (Int 2)) 
-        (RProg 
-            (Prog (Def (Name "c") Aeps (Int 3)) (RProg 
-(Prog (Def (Name "result") Aeps 
-    (Plus (Variable "a") 
-    (Minus (Variable "b") 
-    (Variable "c")))
-    ) Deps)))))))
-
-----------------------------------------------------------------
+"foo bar zoom 1;"
 
 Just 
-(Prog 
-    (Def (Name "a") Aeps (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps)))(RProg 
-    
-    (Prog 
-        (Def (Name "b") Aeps (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 2)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) (RProg 
-        
-        (Prog 
-            (Def (Name "add") (RVars (Name "a") (RVars (Name "b") Aeps)) (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "a"))) RE7eps) RE6eps)) (PLUS (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "b"))) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps)))) RE3eps) RE2eps) RE1eps))) (RProg 
-            
-            (Prog 
-                (Def (Name "applied") Aeps (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "add"))) (App (Expr7 (AtomExpr (T_VAR (Name "a"))) (App (Expr7 (AtomExpr (T_VAR (Name "b"))) RE7eps))))) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) Deps)))))))
+(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "foo"))) 
+(App (Expr7 (AtomExpr (T_VAR (Name "bar"))) 
+(App (Expr7 (AtomExpr (T_VAR (Name "zoom"))) 
+(App (Expr7 (AtomExpr (T_INT 1)) RE7eps))))))) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))
 
+------------------------------------------------------------------
 
-----------------------------------------------------------------
+"(1 * (2 + (3 + 4))) - (5 / 6);"
 
-"a = 1; b = 2; c = a + b;"
+Just 
+(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 
+(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
+(T_INT 1)) RE7eps) 
+(MULT (Expr7 
+(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
+(T_INT 2)) RE7eps) RE6eps)) 
+(PLUS (PosExpr5 (Expr6 (Expr7 
+(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
+(T_INT 3)) RE7eps) RE6eps)) 
+(PLUS (PosExpr5 (Expr6 (Expr7 (AtomExpr 
+(T_INT 4)) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))) RE7eps) RE6eps)) 
+(MINUS (PosExpr5 (Expr6 (Expr7 
+(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
+(T_INT 5)) RE7eps) 
+(DIV (Expr7 (AtomExpr 
+(T_INT 6)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))
 
-Prog 
-  (Def 
-    (Name "a") 
-    Aeps 
-    (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) 
-  (RProg 
-    (Prog 
-      (Def 
-        (Name "b") 
-        Aeps 
-        (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 2)) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) 
-      (RProg 
-        (Prog 
-          (Def 
-            (Name "c") 
-            Aeps 
-            (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "a"))) RE7eps) RE6eps)) (PLUS (Expr1' (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "b"))) RE7eps) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps)))) RE3eps) RE2eps) RE1eps))) 
-          Deps)
-      )
-    )
-  )
+------------------------------------------------------------------

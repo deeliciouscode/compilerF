@@ -4,7 +4,6 @@ import DataStructures
 import Lexer
 import Parser
 import Data.Text
--- import Relude
 
 -- F Spezifikationen (Skript Seite 61):
 -- Lokale Definitionen sind in F möglich, jedoch eingeschränkt auf Definitionen von Ausdrücken ohne Parameter (Wertedefinitionen).
@@ -21,6 +20,7 @@ import Data.Text
 -- inputString = "foo = 3; bar = 4; main = (foo + bar) * 4 - 134;"
 -- inputString = "main = (2 + 10) * 4 - 134;"
 -- inputString = "main = (2 + 10) * 4;"
+
 inputString = "let a = True in if a then 69 else 420;"
 -- NOTE: Up untill now we can only parse Expressions.
 
@@ -51,31 +51,7 @@ static = do
 
 
 
-
------------------------------------------------------------------------------
-
--- let a=3; b=2; c=4 in a+b+c; 
-
--- (Just 
---    (LetIn 
---      (LocDefs 
---        (LocDef (Name "a") (Int 3)) 
---        (RLocDefs 
---          (LocDefs 
---            (LocDef (Name "b") (Int 2)) 
---            (RLocDefs 
---              (LocDefs 
---                (LocDef (Name "c") (Int 4)) 
---                LDeps))))) 
---      (Plus 
---        (Variable "a") 
---        (Plus 
---          (Variable "b") 
---          (Variable "c"))))
-
-
------------------------------------------------------------------------------
-
+------------------------------------------------------------------
 
 
 

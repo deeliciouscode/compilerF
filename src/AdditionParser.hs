@@ -7,8 +7,6 @@
 
 module Parser3 where
 
--- import Relude
-
 data Token
   = Number String 
   | Plus
