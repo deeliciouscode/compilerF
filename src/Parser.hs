@@ -1,7 +1,6 @@
 -- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module Parser where
 
--- import Relude
 import Data.Text
 import Data.Maybe
 
@@ -17,11 +16,11 @@ parseProgram :: Parser Token Prog
 parseProgram tokens =
   case parseDefinition tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseProgram returned Nothing" : tokensRest0)
-    (Just def, tokens) -> (Just (Prog def (fromJust (fst (parseRestProgram tokens)))), [])
+    (Just def, tokens) -> (Just (Prog def (fromMaybe Deps (fst (parseRestProgram tokens)))), [])
 
 parseRestProgram :: Parser Token RestProg
 parseRestProgram [] = (Just Deps, [])
-parseRestProgram tokens = (Just (RProg (fromJust (fst restProg))), snd restProg)
+parseRestProgram tokens = (Just (RProg (fromMaybe EmptyProg (fst restProg))), snd restProg)
                 where restProg = parseProgram tokens
 
 ------------------------------- DEFINITION -------------------------------
@@ -41,9 +40,9 @@ parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
 parseDefinition tokens = (Nothing, Error "parseDefinition was called with the following unsupported token: " : tokens)
 
 parseArgs :: Parser Token Args
-parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (RVars (Name name) (fromJust (fst args))), snd args)
+parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (RVars (Name name) (fromMaybe Aeps (fst args))), snd args)
               where args = parseArgs tokensRest0
-parseArgs all@(TEQUAL : tokensRest0) = (Just Veps, all)
+parseArgs all@(TEQUAL : tokensRest0) = (Just Aeps, all)
 parseArgs tokens = (Nothing, Error "parseArgs was called with the following unsupported token: " : tokens)
 
 ------------------------------- EXPRESIONS -------------------------------
@@ -73,7 +72,7 @@ parseExpression (T_IF : tokensRest0) =
 parseExpression tokens =
   case parseExpr1 tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseExpr1 returned Nothing (in parseExpression, Atom case)" : tokensRest0)
-    (expr1, tokensRest0) -> (Expr1' <$> expr1, tokensRest0)
+    (expr1, tokensRest0) -> (Expr <$> expr1, tokensRest0)
 
 ---------------------------- EXPRESSION 1 - 7 ----------------------------
 
@@ -81,13 +80,13 @@ parseExpr1 :: Parser Token  Expr1
 parseExpr1 tokens =
   case parseExpr2 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr2 returned Nothing" : rest)
-    (Just expr2, tokensRest) -> (Just (Expr1 expr2 (fromJust (fst restExpr1))), snd restExpr1)
+    (Just expr2, tokensRest) -> (Just (Expr1 expr2 (fromMaybe RE1eps (fst restExpr1))), snd restExpr1)
                   where restExpr1 = parseRest1 tokensRest
 
 parseRest1 :: Parser Token RestExpr1
 parseRest1 (TBinOp BO_OR : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (OR <$> expr, tokensRest1)
+  case parseExpr2 tokensRest0 of
+    (expr2, tokensRest1) -> (OR <$> expr2, tokensRest1)
 parseRest1 tokens = (Just RE1eps, tokens)
 
 ----------------------------------------------------------------------------------------
@@ -96,13 +95,13 @@ parseExpr2 :: Parser Token  Expr2
 parseExpr2 tokens =
   case parseExpr3 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr3 returned Nothing" : rest)
-    (Just expr3, tokensRest) -> (Just (Expr2 expr3 (fromJust (fst restExpr2))), snd restExpr2)
+    (Just expr3, tokensRest) -> (Just (Expr2 expr3 (fromMaybe RE2eps (fst restExpr2))), snd restExpr2)
                   where restExpr2 = parseRest2 tokensRest
 
 parseRest2 :: Parser Token RestExpr2
 parseRest2 (TBinOp BO_AND : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (AND <$> expr, tokensRest1)
+  case parseExpr3 tokensRest0 of
+    (expr3, tokensRest1) -> (AND <$> expr3, tokensRest1)
 parseRest2 tokens = (Just RE2eps, tokens)
 
 ----------------------------------------------------------------------------------------
@@ -111,16 +110,16 @@ parseExpr3 :: Parser Token  Expr3
 parseExpr3 tokens =
   case parseExpr4 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr4 returned Nothing" : rest)
-    (Just expr4, tokensRest) -> (Just (Expr3 expr4 (fromJust (fst restExpr3))), snd restExpr3)
+    (Just expr4, tokensRest) -> (Just (Expr3 expr4 (fromMaybe RE3eps (fst restExpr3))), snd restExpr3)
                   where restExpr3 = parseRest3 tokensRest
 
 parseRest3 :: Parser Token RestExpr3
 parseRest3 (TBinOp BO_EQUAL : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (CompEq' <$> expr, tokensRest1)
+  case parseExpr4 tokensRest0 of
+    (expr4, tokensRest1) -> (CompEq' <$> expr4, tokensRest1)
 parseRest3 (TBinOp BO_SMALLER : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (CompSmaller' <$> expr, tokensRest1)
+  case parseExpr4 tokensRest0 of
+    (expr4, tokensRest1) -> (CompSmaller' <$> expr4, tokensRest1)
 parseRest3 tokens = (Just RE3eps, tokens)
 
 ----------------------------------------------------------------------------------------
@@ -129,16 +128,16 @@ parseExpr4 :: Parser Token  Expr4
 parseExpr4 tokens =
   case parseExpr5 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr5 returned Nothing" : rest)
-    (Just expr5, tokensRest) -> (Just (Expr4 expr5 (fromJust (fst restExpr4))), snd restExpr4)
+    (Just expr5, tokensRest) -> (Just (Expr4 expr5 (fromMaybe RE4eps (fst restExpr4))), snd restExpr4)
                   where restExpr4 = parseRest4 tokensRest
 
 parseRest4 :: Parser Token RestExpr4
 parseRest4 (TBinOp BO_PLUS : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (PLUS <$> expr, tokensRest1)
+  case parseExpr5 tokensRest0 of
+    (expr5, tokensRest1) -> (PLUS <$> expr5, tokensRest1)
 parseRest4 (TBinOp BO_MINUS : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (MINUS <$> expr, tokensRest1)
+  case parseExpr5 tokensRest0 of
+    (expr5, tokensRest1) -> (MINUS <$> expr5, tokensRest1)
 parseRest4 tokens = (Just RE4eps, tokens)
 
 ----------------------------------------------------------------------------------------
@@ -159,16 +158,16 @@ parseExpr6 :: Parser Token  Expr6
 parseExpr6 tokens =
   case parseExpr7 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr7 returned Nothing" : rest)
-    (Just expr7, tokensRest) -> (Just (Expr6 expr7 (fromJust (fst restExpr6))), snd restExpr6)
+    (Just expr7, tokensRest) -> (Just (Expr6 expr7 (fromMaybe RE6eps (fst restExpr6))), snd restExpr6)
                   where restExpr6 = parseRest6 tokensRest
 
 parseRest6 :: Parser Token RestExpr6
 parseRest6 (TBinOp BO_MUL : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (MULT <$> expr, tokensRest1)
+  case parseExpr7 tokensRest0 of
+    (expr7, tokensRest1) -> (MULT <$> expr7, tokensRest1)
 parseRest6 (TBinOp BO_DIV : tokensRest0) =
-  case parseExpression tokensRest0 of
-    (expr, tokensRest1) -> (DIV <$> expr, tokensRest1)
+  case parseExpr7 tokensRest0 of
+    (expr7, tokensRest1) -> (DIV <$> expr7, tokensRest1)
 parseRest6 tokens = (Just RE6eps, tokens)
 
 ----------------------------------------------------------------------------------------
@@ -177,12 +176,13 @@ parseExpr7 :: Parser Token  Expr7
 parseExpr7 tokens =
   case parseAtomicExpr tokens of
     (Nothing, rest) -> (Nothing, Error "parseAtomicExpr returned Nothing" : rest)
-    (Just atomExpr, tokensRest) -> (Just (Expr7 atomExpr (fromJust (fst restExpr7))), snd restExpr7)
+    (Just atomExpr, tokensRest) -> (Just (Expr7 atomExpr (fromMaybe RE7eps (fst restExpr7))), snd restExpr7)
                   where restExpr7 = parseRest7 tokensRest
 
 parseRest7 :: Parser Token RestExpr7
 parseRest7 [] = (Nothing, [Error "parseRest7 should never be called with empty list of tokens, maybe a semicolon is missing?"])
 parseRest7 (TSEMICOL : tokensRest0) = (Just RE7eps, tokensRest0)
+parseRest7 all@(TRPAREN : tokensRest0) = (Just RE7eps, all)
 parseRest7 all@(next : tokens)
                       | isOperator next = (Just RE7eps, all)
                       | otherwise = case parseExpr7 all of
@@ -199,14 +199,19 @@ isOperator _            = False
 ----------------------------------------------------------------------------------------
 
 parseAtomicExpr :: Parser Token  AtomicExpr
-parseAtomicExpr (TAtomExpr atomExpr : tokensRest) =
-  (Just (AtomExpr atomExpr), tokensRest)
+parseAtomicExpr (TLPAREN : tokensRest0) = 
+  case parseExpression tokensRest0 of
+    (Nothing, rest) -> (Nothing, Error "parseExpr7 returned Nothing" : rest)
+    (Just expr, TRPAREN : tokensRest1) -> 
+      (Just (Parenthesised expr), tokensRest1)
+    (_, tokens) -> (Nothing, Error "parseExpression should have returned (TRPAREN : rest) but returned: " : tokens)
+parseAtomicExpr (TAtomExpr atomExpr : tokensRest) = (Just (AtomExpr atomExpr), tokensRest)
 parseAtomicExpr tokens = (Nothing, Error "parseAtomicExpr was called with the following unsupported token: " : tokens)
 -- parseAtomicExpr (TLPAREN : tokensRest) = ()
 -- parseAtomicExpr tokens = 
 --   case parseAtomicExpr tokens of
 --     (Nothing, rest) -> (Nothing, Error "parseExpr1 returned Nothing" : rest)
---     (Just atomExpr, tokensRest) -> (Just (Expr7 atomExpr (fromJust (fst restExpr7))), snd restExpr7)
+--     (Just atomExpr, tokensRest) -> (Just (Expr7 atomExpr (fromMaybe (fst restExpr7))), snd restExpr7)
 --                   where restExpr7 = parseRest7 tokensRest
 
 
@@ -248,9 +253,3 @@ parseEqualSign :: Parser Token Token
 parseEqualSign (TEQUAL : tokensRest0) = (Just TEQUAL, tokensRest0)
 parseEqualSign tokens = (Nothing, Error "parseEqualSign was called with the following unaccepted token: " : tokens)
 
-checkForEndToken :: Parser Token EndToken
-checkForEndToken all@(T_IN : tokensRest0) = (Just EndToken, all)
-checkForEndToken all@(TSEMICOL : tokensRest0) = (Just EndToken, tokensRest0)
-checkForEndToken all@(T_THEN : tokensRest0) = (Just EndToken, tokensRest0)
-checkForEndToken all@(T_ELSE : tokensRest0) = (Just EndToken, tokensRest0)
-checkForEndToken tokens = (Nothing, tokens)

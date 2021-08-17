@@ -4,7 +4,6 @@ import DataStructures
 import Lexer
 import Parser
 import Data.Text
--- import Relude
 
 -- F Spezifikationen (Skript Seite 61):
 -- Lokale Definitionen sind in F möglich, jedoch eingeschränkt auf Definitionen von Ausdrücken ohne Parameter (Wertedefinitionen).
