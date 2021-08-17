@@ -49,180 +49,7 @@ AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
 Variable             ::= Name .
 ```
 
-Backus Naur Form Remove Left Recursion of F:
-```
-Programm             ::= Definition ";" { Definition ";"} .
-First(Programm) = {}
-
-Definition           ::= Variable {Variable} "=" Ausdruck .
-Lokaldefinitionen    ::= Lokaldefinition { ";" Lokaldefinition } .
-Lokaldefinition      ::= Variable "=" Ausdruck .
-Ausdruck             ::= "let" Lokaldefinitionen "in" Ausdruck
-                       | "if" Ausdruck "then" Ausdruck "else" Ausdruck
-                       | Ausdruck BinärOp Ausdruck
-                       | UnärOp Ausdruck
-                       | Ausdruck Ausdruck
-                       | "(" Ausdruck ")"
-                       | AtomarerAusdruck .
-BinärOp              ::= "&" | "|" | "==" | "<" | "+" | "−" | "∗" | "/" .
-UnärOp               ::= "not" | "−" .
-AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
-Variable             ::= Name .
-```
-
-Abstract Form:
-```
-P   ->  D ";" | D ";" P
-D   ->  V D | V "=" A
-LDN ->  LD | LD ";" LDN
-LD  ->  V "=" A
-A   ->  "let" LDN "in" A 
-    |   "if" A "then" A "else" A 
-    |   A B A 
-    |   U A 
-    |   A A 
-    |   "(" A ")"
-    |   AA
-B   ->  "&" 
-    |   "|" 
-    |   "=="
-    |   "<"
-    |   "+"
-    |   "-"
-    |   "*"
-    |   "/"
-U   ->  "not" |   "-"
-AA  ->  V | Z | W
-V   ->  N
-```
-
-P solved
-```
-P -> D; P -> D; D; P -> D; D; D;
-since \eps is nothing, these are equal
-P -> D; MD -> D; P -> D; D; MD -> D; D; P -> D; D; D; MD -> D; D; D; \eps
-```
-
-D solved
-```
-D -> V D -> V V D -> V V V D -> V V V V "=" A
-since \eps is nothing, these are equal
-D -> V MV "=" A -> V V MV "=" A -> A -> V V V MV "=" A -> V V V V MV "=" A -> V V V V \eps "=" A
-```
-
-A solved
-```
-A -> A B A -> "let" LDN "in" A B A -> "let" LDN "in" U A B A ->
-"let" LDN "in" U A B A A -> "let" LDN "in" U A / A A -> 
-since \eps is nothing, these are equal
-A -> "let" LDN "in" A RA -> "let" LDN "in" A B A RA -> "let" LDN "in" U A RA B A RA -> "let" LDN "in" U A \eps B A RA -> "let" LDN "in" U A \eps B A A RA -> "let" LDN "in" U A \eps B A A \eps -> "let" LDN "in" U A \eps / A A \eps
-```
-
-Without Left Recursion:
-```
-P   ->  D ";" MD
-MD  ->  \eps | P
-
-D   ->  V MV "=" A
-MV  -> \eps | V MV
-
-LDN ->  LD MLD
-MLD -> \eps | ";" LD MLD
-
-LD  ->  V "=" A
-
-A   ->  "let" LDN "in" A RA
-    |   "if" A "then" A "else" A RA 
-    |   U A RA
-    |   "(" A ")" RA
-RA  -> \eps | B A RA | A RA 
-
-B   ->  "&" 
-    |   "|" 
-    |   "=="
-    |   "<"
-    |   "+"
-    |   "-"
-    |   "*"
-    |   "/"
-U   ->  "not" |   "-"
-AA  ->  V | Z | W
-V   ->  N
-```
-
-Without Left Recursion:
-```
-Programm                ->  Definition ";" RestProgramm
-RestProgramm            ->  \eps | Programm
-
-Definition              ->  Variable MultiVariablen "=" Ausdruck
-MultiVariablen          ->  \eps | Variable MultiVariablen
-
-Lokaldefinitionen       ->  Lokaldefinition RestLokaldefinitionen
-RestLokaldefinitionen   ->  \eps | ";" Lokaldefinition RestLokaldefinitionen
-
-Lokaldefinition         ->  Variable "=" Ausdruck
-
-Ausdruck                ->  "let" Lokaldefinitionen "in" Ausdruck RestAusdruck
-                        |   "if" Ausdruck "then" Ausdruck "else" Ausdruck RestAusdruck 
-                        |   UnärOp Ausdruck RestAusdruck
-                        |   "(" Ausdruck ")" RestAusdruck
-                        |   AtomarerAusdruck RestAusdruck
-
-RestAusdruck            ->  \eps 
-                        |   BinärOp Ausdruck RestAusdruck 
-                        |   Ausdruck RestAusdruck
-
-BinärOp                 ->  "&" 
-                        |   "|" 
-                        |   "=="
-                        |   "<"
-                        |   "+"
-                        |   "-"
-                        |   "*"
-                        |   "/"
-
-UnärOp                  ->  "not" 
-                        |   "-"
-
-AtomarerAusdruck        ->  Variable 
-                        |   Zahl 
-                        |   Wahrheitswert
-
-Variable                ->  Name
-```
-
-Von Phillip:
-```
-program             ::= definition ; {definition ;}
-definition          ::= Variable {Variable} = expression
-localDefinitions    ::= localDefinition {; localDefinition}
-localDefinition     ::= Variable = expression
-expression          ::=
-                        Let localDefinitions In audruck |
-                        If expression Then expression Else expression |
-                        expression1
-
-expression1         ::= expression2 restExpression1
-restExpression1     ::= "|" expression1 | \epsilon
-expression2         ::= expression3 restExpression2
-restExpression2     ::= & expression2 | \epsilon
-expression3         ::= expression4
-expression4         ::= expression5 restExpression4
-restExpression4     ::= comparisonOperator expression5 | \epsilon
-expression5         ::= expression6
-expression6         ::= expression7 restExpression6
-restExpression6     ::= - expression7 | {+ expression7}
-expression7         ::= expression8 restExpression7
-restExpression7     ::= / expression8 | {* expression7}
-expression8         ::= atomicExpression {atomicExpression}
-
-atomicExpression    ::= Variable | Literal | ( expression )
-
-comparisonOperator  ::= == | <
-```
-
-Philip
+Provided by Philip
 ```
 Program ::= Definition ; {Definition ;}
 Definition ::= Variable {Variable} = Expression
@@ -246,8 +73,7 @@ AtomicExpression ::= Variable | Literal | ( Expression )
 ComparisonOperator ::= == | <
 ```
 
-
-Von Phillip Angepasst:
+Provided by Phillip modified:
 ```
 Program                 ::= Definition ; RestProgramm
 RestProgramm            ::= \eps | Program ;
@@ -288,6 +114,10 @@ AtomicExpression        ::= Var | Int | Bool | ( Expression )
 
 CompOp                  ::= == | <
 ```
+
+-----------------------------------------------------------------
+
+## Some evaluations of the current state
 
 -----------------------------------------------------------------
 

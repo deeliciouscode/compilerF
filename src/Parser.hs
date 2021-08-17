@@ -40,7 +40,7 @@ parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
 parseDefinition tokens = (Nothing, Error "parseDefinition was called with the following unsupported token: " : tokens)
 
 parseArgs :: Parser Token Args
-parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (RVars (Name name) (fromMaybe Aeps (fst args))), snd args)
+parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (Arg (Name name) (fromMaybe Aeps (fst args))), snd args)
               where args = parseArgs tokensRest0
 parseArgs all@(TEQUAL : tokensRest0) = (Just Aeps, all)
 parseArgs tokens = (Nothing, Error "parseArgs was called with the following unsupported token: " : tokens)
@@ -67,8 +67,6 @@ parseExpression (T_IF : tokensRest0) =
             (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, ELSE case)" : tokensRest3)
             (Just thirdExpressionResult, tokensRest3) ->
               (Just $ IfThenElse firstExpressionResult secondExpressionResult thirdExpressionResult, tokensRest3)
--- I guess we have to stuff in parenthesised expresions somewhere here
--- actually it has to be implemented in parseExpr7, most likely
 parseExpression tokens =
   case parseExpr1 tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseExpr1 returned Nothing (in parseExpression, Atom case)" : tokensRest0)
@@ -207,13 +205,6 @@ parseAtomicExpr (TLPAREN : tokensRest0) =
     (_, tokens) -> (Nothing, Error "parseExpression should have returned (TRPAREN : rest) but returned: " : tokens)
 parseAtomicExpr (TAtomExpr atomExpr : tokensRest) = (Just (AtomExpr atomExpr), tokensRest)
 parseAtomicExpr tokens = (Nothing, Error "parseAtomicExpr was called with the following unsupported token: " : tokens)
--- parseAtomicExpr (TLPAREN : tokensRest) = ()
--- parseAtomicExpr tokens = 
---   case parseAtomicExpr tokens of
---     (Nothing, rest) -> (Nothing, Error "parseExpr1 returned Nothing" : rest)
---     (Just atomExpr, tokensRest) -> (Just (Expr7 atomExpr (fromMaybe (fst restExpr7))), snd restExpr7)
---                   where restExpr7 = parseRest7 tokensRest
-
 
 ------------------------------- LOCAL DEFS -------------------------------
 

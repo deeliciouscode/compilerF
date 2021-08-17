@@ -9,19 +9,19 @@ data Prog = Prog Def RestProg | EmptyProg
 data RestProg = Deps | RProg Prog
   deriving (Show)
 
-data Def = Def Var Args Expr | EmptyDef
+data Def = Def Var Args Expr
   deriving (Show)
 
-data Args = Aeps | RVars Var Args
+data Args = Aeps | Arg Var Args
   deriving (Show)
 
-data LocDefs = LocDefs LocDef RestLocDefs | EmptyLocDefs
+data LocDefs = LocDefs LocDef RestLocDefs
   deriving (Show)
 
 data RestLocDefs = LDeps | RLocDefs LocDefs
   deriving (Show)
 
-data LocDef = LocDef Var Expr  | EmptyLocDef
+data LocDef = LocDef Var Expr
   deriving (Show)
   
 data Expr
@@ -31,46 +31,46 @@ data Expr
   | EmptyExpr
   deriving (Show)
 
-data Expr1 = Expr1 Expr2 RestExpr1 | EmptyExpr1
+data Expr1 = Expr1 Expr2 RestExpr1
   deriving (Show)
 
 data RestExpr1 = RE1eps | OR Expr2
   deriving (Show)
 
-data Expr2 = Expr2 Expr3 RestExpr2 | EmptyExpr2
+data Expr2 = Expr2 Expr3 RestExpr2
   deriving (Show)
 
 data RestExpr2 = RE2eps | AND Expr3
   deriving (Show)
 
-data Expr3 = Expr3 Expr4 RestExpr3 | EmptyExpr3
+data Expr3 = Expr3 Expr4 RestExpr3 
   deriving (Show)
 
 data RestExpr3 = RE3eps | CompEq' Expr4 | CompSmaller' Expr4
   deriving (Show)
 
-data Expr4 = Expr4 Expr5 RestExpr4 | EmptyExpr4
+data Expr4 = Expr4 Expr5 RestExpr4
   deriving (Show)
 
 data RestExpr4 = RE4eps | PLUS Expr5 | MINUS Expr5
   deriving (Show)
 
-data Expr5 = PosExpr5 Expr6 | NegExpr5 Expr6 | EmptyExpr5
+data Expr5 = PosExpr5 Expr6 | NegExpr5 Expr6 
   deriving (Show)
 
-data Expr6 = Expr6 Expr7 RestExpr6 | EmptyExpr6
+data Expr6 = Expr6 Expr7 RestExpr6 
   deriving (Show)
 
 data RestExpr6 = RE6eps | MULT Expr7 | DIV Expr7
   deriving (Show)
 
-data Expr7 = Expr7 AtomicExpr RestExpr7 | EmptyExpr7
+data Expr7 = Expr7 AtomicExpr RestExpr7 
   deriving (Show)
 
 data RestExpr7 = RE7eps | App Expr7
   deriving (Show)
 
-data AtomicExpr = AtomExpr AtomExpr | Parenthesised Expr  | EmptyAtomicExpr
+data AtomicExpr = AtomExpr AtomExpr | Parenthesised Expr 
   deriving (Show)
 
 newtype Var = Name String

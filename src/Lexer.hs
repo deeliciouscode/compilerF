@@ -6,9 +6,6 @@ import DataStructures
 import Helpers
 
 
--- FIX unär minus bug 
--- genListOfTokens "a = 1; b = -2; add a b = a + b; applied = add a b;" -> the -2 is not recognized
-
 genListOfTokens :: String -> [Token]
 genListOfTokens str = retokenize $ dialex str
 
@@ -61,4 +58,3 @@ tokenize other
             | isJust (readMaybe other :: Maybe Bool) = TAtomExpr $ T_BOOL (read other)
             | isJust (readMaybe other :: Maybe Int) = TAtomExpr $ T_INT (read other)
 tokenize var = TAtomExpr $ T_VAR $ Name var
--- tokenize _ = TNULL
