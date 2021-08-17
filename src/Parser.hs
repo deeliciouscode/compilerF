@@ -73,7 +73,7 @@ parseExpression (T_IF : tokensRest0) =
 parseExpression tokens =
   case parseExpr1 tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseExpr1 returned Nothing (in parseExpression, Atom case)" : tokensRest0)
-    (expr1, tokensRest0) -> (Expr1' <$> expr1, tokensRest0)
+    (expr1, tokensRest0) -> (Expr <$> expr1, tokensRest0)
 
 ---------------------------- EXPRESSION 1 - 7 ----------------------------
 

@@ -27,7 +27,7 @@ data LocDef = LocDef Var Expr
 data Expr
   = LetIn LocDefs Expr
   | IfThenElse Expr Expr Expr
-  | Expr1' Expr1
+  | Expr Expr1
   deriving (Show)
 
 data EndToken = EndToken
