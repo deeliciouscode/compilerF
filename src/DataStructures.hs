@@ -12,7 +12,7 @@ data RestProg = Deps | RProg Prog
 data Def = Def Var Args Expr
   deriving (Show)
 
-data Args = Veps | RVars Var Args
+data Args = Aeps | RVars Var Args
   deriving (Show)
 
 data LocDefs = LocDefs LocDef RestLocDefs

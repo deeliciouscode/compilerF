@@ -43,7 +43,7 @@ parseDefinition tokens = (Nothing, Error "parseDefinition was called with the fo
 parseArgs :: Parser Token Args
 parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (RVars (Name name) (fromJust (fst args))), snd args)
               where args = parseArgs tokensRest0
-parseArgs all@(TEQUAL : tokensRest0) = (Just Veps, all)
+parseArgs all@(TEQUAL : tokensRest0) = (Just Aeps, all)
 parseArgs tokens = (Nothing, Error "parseArgs was called with the following unsupported token: " : tokens)
 
 ------------------------------- EXPRESIONS -------------------------------
