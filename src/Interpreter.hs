@@ -86,3 +86,10 @@ parseWith parser string = fromJust $ fst (parser $ genListOfTokens string)
 -- c :: [Token] -> (Maybe AstC, [Token])
 -- d :: [Token] -> (Maybe AstD, [Token])
 -- e :: [Token] -> (Maybe AstE, [Token])
+
+complexProgram1 = 
+  " a = 1; \
+  \ b = 2; \
+  \ c = a + b; \
+  \ f x y z = if x < 10 then let y = y * y in y * z else x / y; \
+  \ maain = f a b c;"

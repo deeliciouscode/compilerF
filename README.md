@@ -233,3 +233,52 @@ Just (Minus
 "let a = 1; b = (2 * 3) in a + b;"
 
 LetIn (LocDefs (LocDef (Name "a") (Pos (Int 1))) (RLocDefs (LocDefs (LocDef (Name "b") (Pos (Pos (Mult (Int 2) (Int 3))))) LDeps))) (Plus (Pos (Var "a")) (Pos (Var "b")))
+
+------------------------------------------------------------------
+
+a = 1;
+b = 2;
+c = a + b;
+f x y z = if x < 10 then let y = y * y in y * z else x / y;
+main = f a b c;
+
+==> 
+
+[
+
+VarDef 
+    "a" 
+    (Pos (Int 1)),
+
+VarDef 
+    "b" 
+    (Pos (Int 2)),
+
+VarDef 
+    "c" 
+    (Plus 
+        (Pos (Var "a")) 
+        (Pos (Var "b"))),
+
+FuncDef 
+    "f" 
+    ["x","y","z"] 
+    (IfThenElse 
+        (SmallerThan 
+            (Pos (Var "x")) 
+            (Pos (Int 10))) 
+        (LetIn 
+            [LocDef 
+                "y" 
+                (Pos (Mult (Var "y") (Var "y")))] 
+            (Pos (Mult (Var "y") (Var "z")))) 
+        (Pos (Div (Var "x") (Var "y")))),
+
+VarDef 
+    "main" 
+    (Pos (App 
+            (Var "f") 
+            (App 
+                (Var "a") 
+                (App 
+                    (Var "b") (Var "c")))))]

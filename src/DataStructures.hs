@@ -8,19 +8,14 @@ type Name = String
 
 type Prog = [Def]
 
-data Def = FuncDef Name [Arg] Expr | VarDef Name Expr | Deps
+data Def = FuncDef Name Args Expr | VarDef Name Expr | Deps
   deriving (Show)
 
-data Args = Aeps | Args [Arg]
-  deriving (Show)
+type Args = [Arg]
 
-data LocDefs = LocDefs LocDef RestLocDefs
-  deriving (Show)
+type LocDefs = [LocDef]
 
-data RestLocDefs = LDeps | RLocDefs LocDefs
-  deriving (Show)
-
-data LocDef = LocDef Var Expr
+data LocDef = LocDef Name Expr | LDeps
   deriving (Show)
   
 data Expr
@@ -83,7 +78,7 @@ data Expr7 = Expr7 AtomicExpr RestExpr7
 data RestExpr7 = RE7eps | APP Expr
   deriving (Show)
 
-data AtomicExpr = AtomExpr Expr | Parenthesised Expr 
+newtype AtomicExpr = AtomExpr Expr
   deriving (Show)
 
 newtype Var = Name String

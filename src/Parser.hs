@@ -28,36 +28,58 @@ parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
   case parseArgs tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseArgs returned Nothing" : tokensRest1)
     (Just args, tokensRest1) ->
-      case parseEqualSign tokensRest1 of
-        (Nothing, tokensRest2) -> (Nothing, Error "parseEqualSign returned Nothing" : tokensRest2)
-        (Just TEQUAL, tokensRest2) ->
-          case parseExpression tokensRest2 of
-            (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseDefinition, Atom case)" : tokensRest3)
-            (Just expr, tokensRest3)
-                          | containsArgs args -> (Just (FuncDef name (unpackArgs args) expr), tokensRest3)
-                          | otherwise -> (Just (VarDef name expr), tokensRest3)
-        (Just _, tokensRest2) -> (Nothing, Error "parseEqualSign returned something other than TEQUAL (in parseDefinition, Atom case)" : tokensRest2)
+      case parseExpression tokensRest1 of
+        (Nothing, tokensRest2) -> (Nothing, Error "parseExpression returned Nothing (in parseDefinition, Atom case)" : tokensRest2)
+        (Just expr, tokensRest2)
+                      | Prelude.null args -> (Just (VarDef name expr), tokensRest2)
+                      | otherwise -> (Just (FuncDef name args expr), tokensRest2)
 parseDefinition [] = (Just Deps, [])
 parseDefinition tokens = (Nothing, Error "parseDefinition was called with the following unsupported token: " : tokens)
 
 parseArgs :: Parser Token Args
--- parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (Arg (Name name) (fromMaybe Aeps (fst args))), snd args)
---               where args = parseArgs tokensRest0
-parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (Args (name : unpackArgs args)), tokensRest1)
+parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (name : args), tokensRest1)
               where
                 parsedArgs = parseArgs tokensRest0
-                args = fromMaybe Aeps $ fst parsedArgs
+                args = fromMaybe [] $ fst parsedArgs
                 tokensRest1 = snd parsedArgs            
-parseArgs all@(TEQUAL : tokensRest0) = (Just Aeps, all)
+parseArgs all@(TEQUAL : tokensRest0) = (Just [], tokensRest0)
 parseArgs tokens = (Nothing, Error "parseArgs was called with the following unsupported token: " : tokens)
 
-containsArgs :: Args -> Bool
-containsArgs Aeps = False
-containsArgs (Args args) = True
 
-unpackArgs :: Args -> [Arg]
-unpackArgs (Args arg) = arg
-unpackArgs Aeps = []
+------------------------------- LOCAL DEFS -------------------------------
+
+parseLocalDefs :: Parser Token LocDefs
+parseLocalDefs (T_IN : tokensRest0) = (Just [], tokensRest0)
+parseLocalDefs all@(TAtomExpr (T_VAR (Name name)) : tokensRest0) =
+  case parseLocalDef all of
+    (Nothing, tokensRest1)          -> (Nothing, Error "parseLocalDef returned Nothing (in parseLocalDefs, Atom case)" : tokensRest1)
+    (Just LDeps, tokensRest1)       -> (Just [], tokensRest1)
+    (Just locDef, tokensRest1)      -> (Just (locDef : restLocDefs), tokensRest2)
+                      where
+                        parsedRestLocDefs = parseLocalDefs tokensRest1
+                        restLocDefs = fromMaybe [] $ fst parsedRestLocDefs
+                        tokensRest2 = snd parsedRestLocDefs
+parseLocalDefs tokens = (Nothing, Error "parseLocalDefs was called with a the following unsupported token: " : tokens)
+                                    
+
+parseLocalDef :: Parser Token LocDef
+parseLocalDef (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
+  case parseEqualSign tokensRest0 of
+    (Nothing , tokensRest1) -> (Nothing, Error "parseEqualSign returned Nothing (in parseLocalDef, Atom case)" : tokensRest1)
+    (Just TEQUAL, tokensRest1) ->
+      case parseExpression tokensRest1 of
+        (Nothing, tokensRest2) -> (Nothing, Error "parseExpression returned Nothing (in parseLocalDef, Atom case)" : tokensRest2)
+        (Just expr, tokensRest2) -> (Just (LocDef name expr), tokensRest2)
+    (Just _, tokensRest1) -> (Nothing, Error "parseEqualSign returned something other than TEQUAL (in parseLocalDef, Atom case)" : tokensRest1)
+parseLocalDef tokens = (Nothing, Error "parseLocalDef was called with the following unsupported token: " : tokens)
+
+-- parseRestLocalDefs :: Parser Token RestLocDefs
+-- parseRestLocalDefs (T_IN : tokensRest0) = (Just LDeps, tokensRest0) --maybe all
+-- parseRestLocalDefs all@(TAtomExpr (T_VAR (Name name)) : tokensRest0) =
+--   case parseLocalDefs all of
+--     (Nothing, tokensRest1) -> (Nothing, Error "parseLocalDefs returned Nothing (in parseRestLocalDefs, Atom case)" : tokensRest1)
+--     (locDefs, tokensRest1) -> (RLocDefs <$> locDefs, tokensRest1)
+-- parseRestLocalDefs tokens = (Nothing, Error "parseRestLocalDefs was called with the following unaccepted token: " : tokens)
 
 ------------------------------- EXPRESIONS -------------------------------
 
@@ -245,44 +267,6 @@ parseAtomicExpr (TLPAREN : tokensRest0) = case parseExpression tokensRest0 of
   (expr, TRPAREN : tokensRest1) -> (expr, tokensRest1)
   (expr, tokensRest1) -> (expr, tokensRest1)
 parseAtomicExpr tokens = (Nothing, Error "parseAtomicExpr was called with the following unsupported token: " : tokens)
--- parseAtomicExpr (TLPAREN : tokensRest0) = 
---   case parseExpression tokensRest0 of
---     (Nothing, rest) -> (Nothing, Error "parseExpr7 returned Nothing" : rest)
---     (Just expr, TRPAREN : tokensRest1) -> 
---       (Just (Parenthesised expr), tokensRest1)
---     (_, tokens) -> (Nothing, Error "parseExpression should have returned (TRPAREN : rest) but returned: " : tokens)
-
-------------------------------- LOCAL DEFS -------------------------------
-
-parseLocalDefs :: Parser Token LocDefs
-parseLocalDefs all@(TAtomExpr (T_VAR (Name name)) : tokensRest0) =
-  case parseLocalDef all of
-    (Nothing, tokensRest1) -> (Nothing, Error "parseLocalDef returned Nothing (in parseLocalDefs, Atom case)" : tokensRest1)
-    (Just locDef, tokensRest1) ->
-      case parseRestLocalDefs tokensRest1 of
-        (Nothing, tokensRest2) -> (Nothing, Error "parseRestLocalDefs returned Nothing (in parseLocalDefs, Atom case)" : tokensRest2)
-        (Just restLocDefs, tokensRest2) ->
-          (Just (LocDefs locDef restLocDefs), tokensRest2)
-parseLocalDefs tokens = (Nothing, Error "parseLocalDefs was called with a the following wrong token: " : tokens)
-
-parseLocalDef :: Parser Token LocDef
-parseLocalDef (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
-  case parseEqualSign tokensRest0 of
-    (Nothing , tokensRest1) -> (Nothing, Error "parseEqualSign returned Nothing (in parseLocalDef, Atom case)" : tokensRest1)
-    (Just TEQUAL, tokensRest1) ->
-      case parseExpression tokensRest1 of
-        (Nothing, tokensRest2) -> (Nothing, Error "parseExpression returned Nothing (in parseLocalDef, Atom case)" : tokensRest2)
-        (Just expr, tokensRest2) -> (Just (LocDef (Name name) expr), tokensRest2)
-    (Just _, tokensRest1) -> (Nothing, Error "parseEqualSign returned something other than TEQUAL (in parseLocalDef, Atom case)" : tokensRest1)
-parseLocalDef tokens = (Nothing, Error "parseLocalDef was called with the following unsupported token: " : tokens)
-
-parseRestLocalDefs :: Parser Token RestLocDefs
-parseRestLocalDefs (T_IN : tokensRest0) = (Just LDeps, tokensRest0) --maybe all
-parseRestLocalDefs all@(TAtomExpr (T_VAR (Name name)) : tokensRest0) =
-  case parseLocalDefs all of
-    (Nothing, tokensRest1) -> (Nothing, Error "parseLocalDefs returned Nothing (in parseRestLocalDefs, Atom case)" : tokensRest1)
-    (locDefs, tokensRest1) -> (RLocDefs <$> locDefs, tokensRest1)
-parseRestLocalDefs tokens = (Nothing, Error "parseRestLocalDefs was called with the following unaccepted token: " : tokens)
 
 --------------------------------- HELPER ---------------------------------
 
