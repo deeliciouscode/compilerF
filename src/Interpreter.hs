@@ -55,11 +55,7 @@ parseWith parser string = fromJust $ fst (parser $ genListOfTokens string)
 
 -- assembly (Assembler)
 
-
-
 ------------------------------------------------------------------
-
-
 
 -- Basic Structure of a Parser
 
