@@ -140,6 +140,11 @@ Just
 (App (Expr7 (AtomExpr (T_INT 1)) RE7eps))) 
 (MULT (Expr7 (AtomExpr (T_INT 3)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps)),[])
 
+            MULT 
+        APP     3
+    APP     1
+foo     bar
+
 ------------------------------------------------------------------
 
 "foo bar zoom 1;"
@@ -173,3 +178,18 @@ Just
 (T_INT 6)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))
 
 ------------------------------------------------------------------
+
+"1 * 2;"
+
+Just 
+    (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) 
+    (MULT (Expr7 (AtomExpr (T_INT 2)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))
+
+
+                App
+        APP            2
+MULT          1
+
+
+"(* 1) 2;"
+

@@ -4,6 +4,8 @@ import DataStructures
 import Lexer
 import Parser
 import Data.Text
+import Data.Maybe
+
 
 -- F Spezifikationen (Skript Seite 61):
 -- Lokale Definitionen sind in F möglich, jedoch eingeschränkt auf Definitionen von Ausdrücken ohne Parameter (Wertedefinitionen).
@@ -40,6 +42,10 @@ static = do
   -- syntactic analysis (Parser)
   let err = parseExpression listOfTokens
   print err
+
+parseWith :: Parser Token a -> String -> a
+parseWith parser string = fromJust $ fst (parser $ genListOfTokens string)
+
 
 -- semantic Analysis
 
