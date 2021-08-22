@@ -34,7 +34,9 @@ cabal.project.local~
 
 ### vscode ###
 .vscode/*
-src/.vscode/*
+.vscode/**/*
+**/.vscode
+*/tasks.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
