@@ -27,6 +27,11 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 
+### F ###
+
+*.bry
+
+
 ### vscode ###
 .vscode/*
 !.vscode/settings.json
