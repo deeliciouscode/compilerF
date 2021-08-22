@@ -3,13 +3,10 @@ module DataStructures where
 newtype InvalidSyntaxError = InvalidSyntaxError String
   deriving (Show)
 
-data Prog = Prog Def RestProg | EmptyProg
-  deriving (Show) 
+type Prog = [Def]
+type Arg = String
 
-data RestProg = Deps | RProg Prog
-  deriving (Show)
-
-data Def = Def Var Args Expr
+data Def = Def Var Args Expr | Deps
   deriving (Show)
 
 data Args = Aeps | Arg Var Args

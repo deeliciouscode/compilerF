@@ -14,12 +14,9 @@ parseProgram :: Parser Token Prog
 parseProgram tokens =
   case parseDefinition tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseProgram returned Nothing" : tokensRest0)
-    (Just def, tokens) -> (Just (Prog def (fromMaybe Deps (fst (parseRestProgram tokens)))), [])
-
-parseRestProgram :: Parser Token RestProg
-parseRestProgram [] = (Just Deps, [])
-parseRestProgram tokens = (Just (RProg (fromMaybe EmptyProg (fst restProg))), snd restProg)
-                where restProg = parseProgram tokens
+    (Just Deps, tokensRest0) -> (Just [], tokensRest0) 
+    (Just def, tokensRest0) -> (Just (def : restDefs), tokensRest0)
+                where restDefs = fromMaybe [] $ fst (parseProgram tokensRest0)
 
 ------------------------------- DEFINITION -------------------------------
 
