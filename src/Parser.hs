@@ -145,7 +145,7 @@ parseExpr4 tokens =
 parseRest4 :: Parser Token RestExpr4
 parseRest4 (TBinOp BO_PLUS : tokensRest0) =
   case parseExpr4 tokensRest0 of
-    (expr5, tokensRest1) -> (PLUS <$> expr5, tokensRest1)
+    (expr4, tokensRest1) -> (PLUS <$> expr4, tokensRest1)
 parseRest4 (TBinOp BO_MINUS : tokensRest0) =
   case parseExpr5 tokensRest0 of
     (expr5, tokensRest1) -> (MINUS <$> expr5, tokensRest1)
