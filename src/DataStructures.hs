@@ -112,7 +112,6 @@ data Token
   = TAtomExpr AtomExpr
   | TBinOp BinaryOp
   | TUniOp UniOp
-  | T_MAIN
   | T_LET
   | T_IN
   | T_IF

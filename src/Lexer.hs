@@ -7,7 +7,7 @@ import Helpers
 
 
 genListOfTokens :: String -> [Token]
-genListOfTokens str = retokenize $ dialex str
+genListOfTokens str = retokenize $ dialex $ removeNewLines str
 
 -- groups tokens that belong to each other together  
 retokenize :: [Token] -> [Token]
@@ -24,6 +24,8 @@ dialex sent@(x:xs)
                 | otherwise = tokenize (fst result) : dialex (snd result)
                 where result = sliceToken "" sent
 
+removeNewLines :: String -> String 
+removeNewLines = concat . lines 
 
 sliceToken :: String -> String -> (String, String)
 sliceToken word "" = (word, "")
@@ -47,8 +49,7 @@ tokenize "=" = TEQUAL
 tokenize "<" = TBinOp BO_SMALLER
 tokenize "&" = TBinOp BO_AND
 tokenize "|" = TBinOp BO_OR
-tokenize "not" = TUniOp UO_NOT 
-tokenize "main" = T_MAIN
+tokenize "not" = TUniOp UO_NOT
 tokenize "let" = T_LET 
 tokenize "in" = T_IN
 tokenize "if" = T_IF  
