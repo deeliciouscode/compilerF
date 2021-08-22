@@ -1,9 +1,7 @@
 -- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module Parser where
-
 import Data.Text
 import Data.Maybe
-
 import Helpers
 import Lexer
 import DataStructures
