@@ -149,7 +149,7 @@ parseRest4 (TBinOp BO_PLUS : tokensRest0) =
   case parseExpr4 tokensRest0 of
     (expr5, tokensRest1) -> (PLUS <$> expr5, tokensRest1)
 parseRest4 (TBinOp BO_MINUS : tokensRest0) =
-  case parseExpr4 tokensRest0 of
+  case parseExpr5 tokensRest0 of
     (expr5, tokensRest1) -> (MINUS <$> expr5, tokensRest1)
 parseRest4 tokens = (Just RE4eps, tokens)
 
@@ -159,11 +159,11 @@ parseExpr5 :: Parser Token  Expr
 parseExpr5 all@(TUniOp UO_MINUS : tokensRest0) =
   case parseExpr6 tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseExpr6 returned Nothing (Neg Case)" : tokensRest1)
-    (Just expr6, tokensRest1) -> (Just (NegExpr expr6), tokensRest1)
+    (Just expr6, tokensRest1) -> (Just (Neg expr6), tokensRest1)
 parseExpr5 tokens = 
   case parseExpr6 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr6 returned Nothing (Pos Case)" : rest)
-    (Just expr6, tokensRest) -> (Just (PosExpr expr6), tokensRest)
+    (Just expr6, tokensRest) -> (Just (Pos expr6), tokensRest)
 
 ----------------------------------------------------------------------------------------
 
@@ -180,7 +180,7 @@ parseExpr6 tokens =
 
 parseRest6 :: Parser Token RestExpr6
 parseRest6 (TBinOp BO_MUL : tokensRest0) =
-  case parseExpr7 tokensRest0 of
+  case parseExpr6 tokensRest0 of
     (expr7, tokensRest1) -> (MULT <$> expr7, tokensRest1)
 parseRest6 (TBinOp BO_DIV : tokensRest0) =
   case parseExpr7 tokensRest0 of
@@ -205,6 +205,7 @@ parseRest7 (TSEMICOL : tokensRest0) = (Just RE7eps, tokensRest0)
 parseRest7 (T_THEN : tokensRest0) = (Just RE7eps, tokensRest0)
 parseRest7 (T_ELSE : tokensRest0) = (Just RE7eps, tokensRest0)
 parseRest7 all@(T_IN : tokensRest0) = (Just RE7eps, all)
+parseRest7 all@(TRPAREN : tokensRest0) = (Just RE7eps, all)
 -- parseRest7 all@(TRPAREN : tokensRest0) = (Just RE7eps, all)
 parseRest7 all@(next : tokens)
                       | isOperator next = (Just RE7eps, all)
@@ -225,6 +226,10 @@ parseAtomicExpr :: Parser Token Expr
 parseAtomicExpr (TAtomExpr (T_VAR (Name name)) : tokensRest) = (Just (Var name), tokensRest)
 parseAtomicExpr (TAtomExpr (T_INT int) : tokensRest) = (Just (Int int), tokensRest)
 parseAtomicExpr (TAtomExpr (T_BOOL bool) : tokensRest) = (Just (Bool bool), tokensRest)
+parseAtomicExpr (TLPAREN : tokensRest0) = case parseExpression tokensRest0 of 
+  (Nothing, tokensRest1) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, ELSE case)" : tokensRest1)
+  (expr, TRPAREN : tokensRest1) -> (expr, tokensRest1)
+  (expr, tokensRest1) -> (expr, tokensRest1)
 parseAtomicExpr tokens = (Nothing, Error "parseAtomicExpr was called with the following unsupported token: " : tokens)
 -- parseAtomicExpr (TLPAREN : tokensRest0) = 
 --   case parseExpression tokensRest0 of

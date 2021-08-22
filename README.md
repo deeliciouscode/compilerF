@@ -193,3 +193,43 @@ MULT          1
 
 "(* 1) 2;"
 
+------------------------------------------------------------------
+
+Just (PosExpr (Mult (Int 1) (Mult (Plus (PosExpr (Int 1)) (PosExpr (Int 3))) (Int 4))))
+
+------------------------------------------------------------------
+
+"1 - (1 + 3) - 4;"
+Just (Minus 
+        (PosExpr (Int 1)) 
+        (Minus 
+            (PosExpr (Plus 
+                (PosExpr (Int 1)) 
+                (PosExpr (Int 3)))) 
+            (PosExpr (Int 4))))
+
+------------------------------------------------------------------
+
+"(1 - (1 + 3)) - 4;"
+Just (Minus 
+        (PosExpr (Minus 
+            (PosExpr (Int 1)) 
+            (PosExpr (Plus (PosExpr (Int 1)) (PosExpr (Int 3)))))) 
+        (PosExpr (Int 4)))
+
+------------------------------------------------------------------
+
+"1 - ((1 + 3) - 4);"
+Just (Minus 
+        (PosExpr (Int 1)) 
+        (PosExpr (Minus 
+            (PosExpr (Plus 
+                (PosExpr (Int 1)) 
+                (PosExpr (Int 3)))) 
+            (PosExpr (Int 4)))))
+
+------------------------------------------------------------------
+
+"let a = 1; b = (2 * 3) in a + b;"
+
+LetIn (LocDefs (LocDef (Name "a") (Pos (Int 1))) (RLocDefs (LocDefs (LocDef (Name "b") (Pos (Pos (Mult (Int 2) (Int 3))))) LDeps))) (Plus (Pos (Var "a")) (Pos (Var "b")))

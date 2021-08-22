@@ -1,6 +1,5 @@
 module DataStructures where
 
-import Language.Haskell.TH (Exp)
 newtype InvalidSyntaxError = InvalidSyntaxError String
   deriving (Show)
 
@@ -38,8 +37,8 @@ data Expr
   | SmallerThan Expr Expr
   | Plus Expr Expr
   | Minus Expr Expr
-  | NegExpr Expr
-  | PosExpr Expr
+  | Neg Expr
+  | Pos Expr
   | Mult Expr Expr
   | Div Expr Expr
   | App Expr Expr
