@@ -15,30 +15,49 @@ parseProgram tokens =
   case parseDefinition tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseProgram returned Nothing" : tokensRest0)
     (Just Deps, tokensRest0) -> (Just [], tokensRest0) 
-    (Just def, tokensRest0) -> (Just (def : restDefs), tokensRest0)
-                where restDefs = fromMaybe [] $ fst (parseProgram tokensRest0)
+    (Just def, tokensRest0) -> (Just (def : restDefs), tokensRest1)
+                where
+                  parsedRestProgram = parseProgram tokensRest0
+                  restDefs = fromMaybe [] $ fst parsedRestProgram
+                  tokensRest1 = snd parsedRestProgram
 
 ------------------------------- DEFINITION -------------------------------
 
 parseDefinition :: Parser Token Def
 parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
   case parseArgs tokensRest0 of
-    (Nothing, tokensRest1) -> (Nothing, Error "parseDefinition returned Nothing (in parseExpression, LET case)" : tokensRest1)
+    (Nothing, tokensRest1) -> (Nothing, Error "parseArgs returned Nothing" : tokensRest1)
     (Just args, tokensRest1) ->
       case parseEqualSign tokensRest1 of
-        (Nothing, tokensRest2) -> (Nothing, Error "parseDefinition returned Nothing (in parseExpression, LET case)" : tokensRest2)
+        (Nothing, tokensRest2) -> (Nothing, Error "parseEqualSign returned Nothing" : tokensRest2)
         (Just TEQUAL, tokensRest2) ->
           case parseExpression tokensRest2 of
             (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseDefinition, Atom case)" : tokensRest3)
-            (Just expr, tokensRest3) -> (Just (Def (Name name) args expr), tokensRest3)
+            (Just expr, tokensRest3)
+                          | containsArgs args -> (Just (FuncDef name (unpackArgs args) expr), tokensRest3)
+                          | otherwise -> (Just (VarDef name expr), tokensRest3)
         (Just _, tokensRest2) -> (Nothing, Error "parseEqualSign returned something other than TEQUAL (in parseDefinition, Atom case)" : tokensRest2)
+parseDefinition [] = (Just Deps, [])
 parseDefinition tokens = (Nothing, Error "parseDefinition was called with the following unsupported token: " : tokens)
 
 parseArgs :: Parser Token Args
-parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (Arg (Name name) (fromMaybe Aeps (fst args))), snd args)
-              where args = parseArgs tokensRest0
+-- parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (Arg (Name name) (fromMaybe Aeps (fst args))), snd args)
+--               where args = parseArgs tokensRest0
+parseArgs (TAtomExpr (T_VAR (Name name)) : tokensRest0) = (Just (Args (name : unpackArgs args)), tokensRest1)
+              where
+                parsedArgs = parseArgs tokensRest0
+                args = fromMaybe Aeps $ fst parsedArgs
+                tokensRest1 = snd parsedArgs            
 parseArgs all@(TEQUAL : tokensRest0) = (Just Aeps, all)
 parseArgs tokens = (Nothing, Error "parseArgs was called with the following unsupported token: " : tokens)
+
+containsArgs :: Args -> Bool
+containsArgs Aeps = False
+containsArgs (Args args) = True
+
+unpackArgs :: Args -> [Arg]
+unpackArgs (Args arg) = arg
+unpackArgs Aeps = []
 
 ------------------------------- EXPRESIONS -------------------------------
 
