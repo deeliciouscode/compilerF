@@ -19,7 +19,7 @@ data LocDef = LocDef Name Expr | LDeps
   deriving (Show)
   
 data Expr
-  = LetIn LocDefs Expr
+  = Let LocDefs Expr
   | If Expr Expr Expr
   | Expr Expr1
   | Var String
@@ -28,7 +28,7 @@ data Expr
   | Or Expr Expr
   | And Expr Expr
   | Equals Expr Expr
-  | SmallerThan Expr Expr
+  | Smaller Expr Expr
   | Plus Expr Expr
   | Minus Expr Expr
   | Neg Expr

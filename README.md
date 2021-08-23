@@ -232,7 +232,7 @@ Just (Minus
 
 "let a = 1; b = (2 * 3) in a + b;"
 
-LetIn (LocDefs (LocDef (Name "a") (Pos (Int 1))) (RLocDefs (LocDefs (LocDef (Name "b") (Pos (Pos (Mult (Int 2) (Int 3))))) LDeps))) (Plus (Pos (Var "a")) (Pos (Var "b")))
+Let (LocDefs (LocDef (Name "a") (Pos (Int 1))) (RLocDefs (LocDefs (LocDef (Name "b") (Pos (Pos (Mult (Int 2) (Int 3))))) LDeps))) (Plus (Pos (Var "a")) (Pos (Var "b")))
 
 ------------------------------------------------------------------
 
@@ -267,7 +267,7 @@ FuncDef
         (Smaller 
             (Pos (Var "x")) 
             (Pos (Int 10))) 
-        (LetIn 
+        (Let 
             [LocDef 
                 "y" 
                 (Pos (Mult (Var "y") (Var "y")))] 
