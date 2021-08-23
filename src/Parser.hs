@@ -91,7 +91,7 @@ parseExpression (T_LET : tokensRest0) =
       case parseExpression tokensRest1 of
         (Nothing, tokensRest2) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, LET case)" : tokensRest2)
         (Just expressionResult, tokensRest2) ->
-          (Just $ LetIn localDefs expressionResult, tokensRest2)
+          (Just $ Let localDefs expressionResult, tokensRest2)
 parseExpression (T_IF : tokensRest0) =
   case parseExpression tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, IF case)" : tokensRest1) -- check if we need to check for then and else

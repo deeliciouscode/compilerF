@@ -30,14 +30,11 @@ data Global = Global [GlobalAddress]
 
 data Store = Store Global Code
 
-
 data InstructionRegister = Int
 data TopRegister = Int
 data ProgramCounter = Int
+data CompiledCode a = CompiledCode [Instructions a]
 --}
-
-
---data CompiledCode a = CompiledCode [Instructions a]
 
 data Instructions = 
     Pushfun String | 
@@ -61,6 +58,7 @@ translateProg (x:xs) = translateDef x [] ++ translateProg xs
 translateProg [] = []
 -- translateProg xs = Prelude.foldr (\ x -> (++) (translateDef x [])) [] xs
 
+-- TODO Implement FuncDef;
 translateDef :: Def -> [Instructions] -> [Instructions]
 translateDef def list = 
     case def of 
@@ -70,12 +68,13 @@ translateDef def list =
 translateVar :: String -> Expr -> [Instructions] -> [Instructions]
 translateVar name expr list = Prelude.reverse (Pushfun name : translateExpr expr ++ list)
 
+-- TODO Implement cases Var & Let;
 translateExpr :: Expr -> [Instructions]
 translateExpr expr = 
     case expr of
         -- Var a ->
         -- Expr a -> 
-        -- LetIn (LocDefs x:xs) a ->
+        -- Let (LocDefs x:xs) a ->
         Int a -> [Pushval (Int a)]
         Bool a -> [Pushval (Bool a)]
         (Or expr1 expr2) -> [Pushfun "Or"] ++ translateExpr expr1 ++ translateExpr expr2
