@@ -9,34 +9,88 @@ import Helpers
 import Lexer
 import DataStructures
 
---genAttTree :: (Maybe a, [token]) -> Map T_VAR (AtomExpr, AtomExpr)
-genAttTree x = unpackProg $ fromJust $ fst x
-unpackProg (Prog def restprog) = unpackDef def
+{--
+Data Emulator = Memory Register Instructions
 
-unpackDef (Def var args expr) = Data.Map.singleton var (unpackExpr expr)
+Data Memory = Code Stack Global Heap
 
-unpackExpr (Expr expr1) = unpackExpr1 expr1
-unpackExpr _ = AtomExpr (T_INT 1)
+Data Stack = Stack
 
-unpackExpr1 (Expr1 expr2 restExpr1) = unpackExpr2 expr2
+Data Register = InstructionReg TopReg ProgramCounter
 
-unpackExpr2 (Expr2 expr3 restExpr2) = unpackExpr3 expr3
+data FunctionReg = FunctionReg [(String, CodeIndex)]
 
-unpackExpr3 (Expr3 expr4 restExpr3) = unpackExpr4 expr4
+data Code = Code [Instructions]
+data HeapAddress = HeapAdress APP | HeapAdress GlobalAddress |
+HeapAdress VAL
 
-unpackExpr4 (Expr4 expr5 restExpr4) = unpackExpr5 expr5
+data GlobalAddress = DEF String Int CodeAddress
 
-unpackExpr5 (PosExpr5 expr6) = unpackExpr6 expr6
-unpackExpr5 (NegExpr5 expr6) = unpackExpr6 expr6
+data Global = Global [GlobalAddress]
 
-unpackExpr6 (Expr6 expr7 restExpr6) = unpackExpr7 expr7
+data Store = Store Global Code
 
-unpackExpr7 (Expr7 atomicExpr restExpr7) = atomicExpr
+data InstructionRegister = Int
+data TopRegister = Int
+data ProgramCounter = Int
+data CompiledCode a = CompiledCode [Instructions a]
+--}
 
+data Instructions = 
+    Pushfun String | 
+    Pushval Expr | 
+    Reset | 
+    Pushparam Expr | 
+    Makeapp | 
+    Slide Expr | 
+    Return | 
+    Halt | 
+    Call | 
+    Unwind | 
+    Operator Expr | 
+    Alloc |
+    SlideLet Expr
 
-    
-    
-    
+    deriving (Show)
 
+translateProg :: [Def] -> [Instructions]
+translateProg (x:xs) = translateDef x [] ++ translateProg xs
+translateProg [] = []
+-- translateProg xs = Prelude.foldr (\ x -> (++) (translateDef x [])) [] xs
 
+-- TODO Implement FuncDef;
+translateDef :: Def -> [Instructions] -> [Instructions]
+translateDef def list = 
+    case def of 
+        VarDef name expr -> translateVar name expr list
+        --FuncDef name args expr -> translateFunc name args expr list
 
+translateVar :: String -> Expr -> [Instructions] -> [Instructions]
+translateVar name expr list = Prelude.reverse (Pushfun name : translateExpr expr ++ list)
+
+-- TODO Implement cases Var & Let;
+translateExpr :: Expr -> [Instructions]
+translateExpr expr = 
+    case expr of
+        -- Var a ->
+        -- Expr a -> 
+        -- Let (LocDefs x:xs) a ->
+        Int a -> [Pushval (Int a)]
+        Bool a -> [Pushval (Bool a)]
+        (Or expr1 expr2) -> [Pushfun "Or"] ++ translateExpr expr1 ++ translateExpr expr2
+        (And expr1 expr2) -> [Pushfun "And"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Equals expr1 expr2) -> [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Smaller expr1 expr2) -> [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Plus expr1 expr2) -> [Pushfun "Plus"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Minus expr1 expr2) -> [Pushfun "Minus"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Neg a) -> [Pushfun "Neg"] ++ translateExpr a
+        (Pos a) -> [Pushfun "Pos"] ++ translateExpr a
+        (Mult expr1 expr2) -> [Pushfun "Mult"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Div expr1 expr2) -> [Pushfun "Div"] ++ translateExpr expr1 ++ translateExpr expr2
+        (App expr1 expr2) -> [Pushfun "App"] ++ translateExpr expr1 ++ translateExpr expr2
+        (If expr1 expr2 expr3) -> [Pushfun "If"] ++ translateExpr expr1 ++ translateExpr expr2
+        EmptyExpr -> []
+
+testProg = [VarDef "a" (DataStructures.Bool True), VarDef "b" (DataStructures.Int 2)]
+testProg2 = [VarDef "a" (DataStructures.Or (DataStructures.Bool True) (DataStructures.Bool False))]
+testProg3 = [VarDef "a" (Pos (Int 1)),VarDef "b" (Plus (Pos (Var "a")) (Pos (Int 2)))]
