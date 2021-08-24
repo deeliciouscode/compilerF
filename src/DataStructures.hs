@@ -20,7 +20,7 @@ data LocDef = LocDef Name Expr | LDeps
   
 data Expr
   = LetIn LocDefs Expr
-  | IfThenElse Expr Expr Expr
+  | If Expr Expr Expr
   | Expr Expr1
   | Var String
   | Int Int 
@@ -39,7 +39,7 @@ data Expr
   deriving (Show)
 
 data Expr1 = Expr1 Expr2 RestExpr1
-  deriving (Show)
+ deriving (Show)
 
 data RestExpr1 = RE1eps | OR Expr
   deriving (Show)

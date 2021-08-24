@@ -102,7 +102,7 @@ parseExpression (T_IF : tokensRest0) =
           case parseExpression tokensRest2 of
             (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, ELSE case)" : tokensRest3)
             (Just thirdExpressionResult, tokensRest3) ->
-              (Just $ IfThenElse firstExpressionResult secondExpressionResult thirdExpressionResult, tokensRest3)
+              (Just $ If firstExpressionResult secondExpressionResult thirdExpressionResult, tokensRest3)
 parseExpression tokens =
   case parseExpr1 tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseExpr1 returned Nothing (in parseExpression, Atom case)" : tokensRest0)
@@ -155,7 +155,7 @@ parseExpr3 tokens =
       case parseRest3 tokensRest0 of 
         (Just RE3eps, tokensRest1) -> (Just expr4, tokensRest1)
         (Just (CompEq expr3), tokensRest1) -> (Just (Equals expr4 expr3), tokensRest1)
-        (Just (CompSmaller expr3), tokensRest1) -> (Just (SmallerThan expr4 expr3), tokensRest1)
+        (Just (CompSmaller expr3), tokensRest1) -> (Just (Smaller expr4 expr3), tokensRest1)
         (Nothing, tokensRest1) -> (Nothing, Error "parseRest3 returned Nothing" : tokensRest1)
 
 parseRest3 :: Parser Token RestExpr3

@@ -263,8 +263,8 @@ VarDef
 FuncDef 
     "f" 
     ["x","y","z"] 
-    (IfThenElse 
-        (SmallerThan 
+    (If 
+        (Smaller 
             (Pos (Var "x")) 
             (Pos (Int 10))) 
         (LetIn 
