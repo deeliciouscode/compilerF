@@ -71,12 +71,13 @@ translateVar name expr list = Prelude.reverse (Pushfun name : translateExpr expr
 translateExpr :: Expr -> [Instructions]
 translateExpr expr =
     case expr of
-        -- Var a ->
-        -- Let (LocDefs x:xs) a ->
+        Var a -> [Pushfun a]
+        Let locDefs expr -> translateLocDefs locDefs
         Int a -> [Pushval (Int a)]
         Bool a -> [Pushval (Bool a)]
         (Or expr1 expr2) -> makeApp2 ++ [Pushfun "Or"] ++ translateExpr expr1 ++ translateExpr expr2
         (And expr1 expr2) -> makeApp2 ++ [Pushfun "And"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Not expr) -> [Makeapp] ++ [Pushfun "Not"] ++ translateExpr expr
         (Equals expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Smaller expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Plus expr1 expr2) -> makeApp2 ++ [Pushfun "Plus"] ++ translateExpr expr1 ++ translateExpr expr2
@@ -92,6 +93,7 @@ translateExpr expr =
 makeApp2 = [Makeapp, Makeapp]
 makeApp3 = [Makeapp, Makeapp, Makeapp]
 
+translateLocDefs :: [LocDef] -> [Instructions]
 translateLocDefs ((LocDef name expr):xs) = translateLocDefs xs ++ translateExpr expr ++ Pushfun name : []
 
 translateFunc name args expr list = Pushfun name : translateArgs args ++ translateExpr expr ++ list
@@ -102,7 +104,7 @@ translateArgs args = translateLocalEnv (createLocalEnv args [])
 createLocalEnv (x:xs) list =  (x, Prelude.length (x:xs)) : createLocalEnv xs list
 createLocalEnv [] _  = []
 
-translateLocalEnv xs = Prelude.map (Pushparam . snd) xs
+translateLocalEnv = Prelude.map (Pushparam . snd)
 
 --- Test Cases ---
 
