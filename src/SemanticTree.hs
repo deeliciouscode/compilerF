@@ -10,29 +10,31 @@ import Lexer
 import DataStructures
 
 {--
-Data Emulator = Memory Register Instructions
-
 Data Memory = Code Stack Global Heap
+data Code = Code [Instructions]
+data Stack = Stack
+data Global = Global [GlobalAddress]
+data Heap = Heap
 
-Data Stack = Stack
+data Registers a = Instructions a | Address a
 
-Data Register = InstructionReg TopReg ProgramCounter
+data Address = Top Int | ProgramCounter Int
+
+
+
+
+data Emulator = Memory Register Instructions
 
 data FunctionReg = FunctionReg [(String, CodeIndex)]
 
-data Code = Code [Instructions]
 data HeapAddress = HeapAdress APP | HeapAdress GlobalAddress |
 HeapAdress VAL
 
 data GlobalAddress = DEF String Int CodeAddress
 
-data Global = Global [GlobalAddress]
 
 data Store = Store Global Code
 
-data InstructionRegister = Int
-data TopRegister = Int
-data ProgramCounter = Int
 data CompiledCode a = CompiledCode [Instructions a]
 --}
 
@@ -67,16 +69,20 @@ translateDef def list =
 translateVar :: String -> Expr -> [Instructions] -> [Instructions]
 translateVar name expr list = Prelude.reverse (Pushfun name : translateExpr expr ++ list)
 
+translateFunc :: String -> [Arg] -> Expr -> [Instructions] -> [Instructions]
+translateFunc name args expr list = Prelude.reverse(Pushfun name : translateArgs args ++ translateExpr expr ++ list)
+
 -- TODO Implement cases Var & Let;
 translateExpr :: Expr -> [Instructions]
 translateExpr expr =
     case expr of
-        -- Var a ->
-        -- Let (LocDefs x:xs) a ->
+        Var a -> [Pushfun a]
+        Let locDefs expr -> translateLocDefs locDefs
         Int a -> [Pushval (Int a)]
         Bool a -> [Pushval (Bool a)]
         (Or expr1 expr2) -> makeApp2 ++ [Pushfun "Or"] ++ translateExpr expr1 ++ translateExpr expr2
         (And expr1 expr2) -> makeApp2 ++ [Pushfun "And"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Not expr) -> [Makeapp] ++ [Pushfun "Not"] ++ translateExpr expr
         (Equals expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Smaller expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Plus expr1 expr2) -> makeApp2 ++ [Pushfun "Plus"] ++ translateExpr expr1 ++ translateExpr expr2
@@ -92,9 +98,9 @@ translateExpr expr =
 makeApp2 = [Makeapp, Makeapp]
 makeApp3 = [Makeapp, Makeapp, Makeapp]
 
+translateLocDefs :: [LocDef] -> [Instructions]
 translateLocDefs ((LocDef name expr):xs) = translateLocDefs xs ++ translateExpr expr ++ Pushfun name : []
 
-translateFunc name args expr list = Pushfun name : translateArgs args ++ translateExpr expr ++ list
 
 translateArgs :: [Arg] -> [Instructions]
 translateArgs args = translateLocalEnv (createLocalEnv args [])
@@ -102,7 +108,7 @@ translateArgs args = translateLocalEnv (createLocalEnv args [])
 createLocalEnv (x:xs) list =  (x, Prelude.length (x:xs)) : createLocalEnv xs list
 createLocalEnv [] _  = []
 
-translateLocalEnv xs = Prelude.map (Pushparam . snd) xs
+translateLocalEnv = Prelude.map (Pushparam . snd)
 
 --- Test Cases ---
 

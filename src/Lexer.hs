@@ -7,7 +7,7 @@ import Helpers
 
 
 genListOfTokens :: String -> [Token]
-genListOfTokens str = retokenize $ dialex $ removeNewLines str
+genListOfTokens str = retokenize $ dialex $ removeNewLinesAndComments str
 
 -- groups tokens that belong to each other together  
 retokenize :: [Token] -> [Token]
@@ -24,8 +24,23 @@ dialex sent@(x:xs)
                 | otherwise = tokenize (fst result) : dialex (snd result)
                 where result = sliceToken "" sent
 
-removeNewLines :: String -> String 
-removeNewLines = concat . lines 
+stripWhiteSpace :: String -> String
+stripWhiteSpace [] = []
+stripWhiteSpace all@(x:xs)
+                | x == ' ' = stripWhiteSpace xs
+                | otherwise = all
+
+doesNotStartWithDoubleDash :: String -> Bool
+doesNotStartWithDoubleDash (head:second:rest)
+                | head == '-' && second == '-' = False
+                | otherwise = True
+doesNotStartWithDoubleDash _ = True
+
+isNotCommented :: String -> Bool
+isNotCommented = doesNotStartWithDoubleDash . stripWhiteSpace
+
+removeNewLinesAndComments :: String -> String 
+removeNewLinesAndComments = concat . filter isNotCommented . lines 
 
 sliceToken :: String -> String -> (String, String)
 sliceToken word "" = (word, "")
