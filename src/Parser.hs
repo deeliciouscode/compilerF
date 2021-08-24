@@ -199,7 +199,7 @@ parseExpr5 all@(TUniOp UO_MINUS : tokensRest0) =
 parseExpr5 tokens = 
   case parseExpr6 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr6 returned Nothing (Pos Case)" : rest)
-    (Just expr6, tokensRest) -> (Just (Pos expr6), tokensRest)
+    (Just expr6, tokensRest) -> (Just expr6, tokensRest)
 
 ----------------------------------------------------------------------------------------
 

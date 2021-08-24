@@ -32,7 +32,6 @@ data Expr
   | Plus Expr Expr
   | Minus Expr Expr
   | Neg Expr
-  | Pos Expr
   | Mult Expr Expr
   | Div Expr Expr
   | App Expr Expr
