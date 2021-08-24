@@ -78,14 +78,14 @@ translateExpr expr =
         Bool a -> [Pushval (Bool a)]
         (Or expr1 expr2) -> makeApp2 ++ [Pushfun "Or"] ++ translateExpr expr1 ++ translateExpr expr2
         (Equals expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
-        (SmallerThan expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Smaller expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Plus expr1 expr2) -> makeApp2 ++ [Pushfun "Plus"] ++ translateExpr expr1 ++ translateExpr expr2
         (Minus expr1 expr2) -> makeApp2 ++ [Pushfun "Minus"] ++ translateExpr expr1 ++ translateExpr expr2
         (Neg a) -> [Pushfun "Neg"] ++ translateExpr a
         (Mult expr1 expr2) -> makeApp2 ++  [Pushfun "Mult"] ++ translateExpr expr1 ++ translateExpr expr2
         (Div expr1 expr2) -> makeApp2 ++ [Pushfun "Div"] ++ translateExpr expr1 ++ translateExpr expr2
         (App expr1 expr2) -> makeApp2 ++ [Pushfun "App"] ++ translateExpr expr1 ++ translateExpr expr2
-        (IfThenElse expr1 expr2 expr3) -> makeApp3 ++ [Pushfun "If"] ++ translateExpr expr1 ++ translateExpr expr2
+        (If expr1 expr2 expr3) -> makeApp3 ++ [Pushfun "If"] ++ translateExpr expr1 ++ translateExpr expr2
         EmptyExpr -> []
 
 
