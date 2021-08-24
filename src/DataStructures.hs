@@ -27,6 +27,7 @@ data Expr
   | Bool Bool
   | Or Expr Expr
   | And Expr Expr
+  | Not Expr
   | Equals Expr Expr
   | Smaller Expr Expr
   | Plus Expr Expr

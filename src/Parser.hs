@@ -130,7 +130,7 @@ parseRest1 tokens = (Just RE1eps, tokens)
 
 parseExpr2 :: Parser Token  Expr
 parseExpr2 tokens =
-  case parseExpr3 tokens of
+  case parseExprNot tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr3 returned Nothing" : rest)
     (Just expr3, tokensRest0) -> 
       case parseRest2 tokensRest0 of 
@@ -145,6 +145,18 @@ parseRest2 (TBinOp BO_AND : tokensRest0) =
     (expr3, tokensRest1) -> (AND <$> expr3, tokensRest1)
 parseRest2 tokens = (Just RE2eps, tokens)
 
+----------------------------------------------------------------------------------------
+
+parseExprNot :: Parser Token  Expr
+parseExprNot all@(TUniOp UO_NOT : tokensRest0) =
+  case parseExpr3 tokensRest0 of
+    (Nothing, tokensRest1) -> (Nothing, Error "parseExpr3 returned Nothing (Not Case)" : tokensRest1)
+    (Just expr3, tokensRest1) -> (Just (Not expr3), tokensRest1)
+parseExprNot tokens = 
+  case parseExpr3 tokens of
+    (Nothing, rest) -> (Nothing, Error "parseExpr3 returned Nothing (Pos Case)" : rest)
+    (Just expr3, tokensRest) -> (Just expr3, tokensRest)
+    
 ----------------------------------------------------------------------------------------
 
 parseExpr3 :: Parser Token Expr
