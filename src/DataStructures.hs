@@ -4,6 +4,7 @@ newtype InvalidSyntaxError = InvalidSyntaxError String
   deriving (Show)
 
 type Arg = String
+
 type Name = String
 
 type Prog = [Def]
@@ -21,7 +22,6 @@ data LocDef = LocDef Name Expr | LDeps
 data Expr
   = Let LocDefs Expr
   | If Expr Expr Expr
-  | Expr Expr1
   | Var String
   | Int Int 
   | Bool Bool
@@ -38,46 +38,22 @@ data Expr
   | EmptyExpr
   deriving (Show)
 
-data Expr1 = Expr1 Expr2 RestExpr1
- deriving (Show)
-
 data RestExpr1 = RE1eps | OR Expr
-  deriving (Show)
-
-data Expr2 = Expr2 Expr3 RestExpr2
   deriving (Show)
 
 data RestExpr2 = RE2eps | AND Expr
   deriving (Show)
 
-data Expr3 = Expr3 Expr4 RestExpr3 
-  deriving (Show)
-
 data RestExpr3 = RE3eps | CompEq Expr | CompSmaller Expr
-  deriving (Show)
-
-data Expr4 = Expr4 Expr5 RestExpr4
   deriving (Show)
 
 data RestExpr4 = RE4eps | PLUS Expr | MINUS Expr
   deriving (Show)
 
-data Expr5 = PosExpr5 Expr | NegExpr5 Expr 
-  deriving (Show)
-
-data Expr6 = Expr6 Expr7 RestExpr6 
-  deriving (Show)
-
 data RestExpr6 = RE6eps | MULT Expr | DIV Expr
   deriving (Show)
 
-data Expr7 = Expr7 AtomicExpr RestExpr7 
-  deriving (Show)
-
 data RestExpr7 = RE7eps | APP Expr
-  deriving (Show)
-
-newtype AtomicExpr = AtomExpr Expr
   deriving (Show)
 
 newtype Var = Name String
