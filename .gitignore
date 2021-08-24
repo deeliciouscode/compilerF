@@ -36,6 +36,7 @@ cabal.project.local~
 .vscode/*
 .vscode/**/*
 .idea/*
+.DS_Store
 **/.vscode
 */tasks.json
 !.vscode/settings.json
