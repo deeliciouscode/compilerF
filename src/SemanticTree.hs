@@ -72,11 +72,11 @@ translateExpr :: Expr -> [Instructions]
 translateExpr expr =
     case expr of
         -- Var a ->
-        -- Expr a -> 
         -- Let (LocDefs x:xs) a ->
         Int a -> [Pushval (Int a)]
         Bool a -> [Pushval (Bool a)]
         (Or expr1 expr2) -> makeApp2 ++ [Pushfun "Or"] ++ translateExpr expr1 ++ translateExpr expr2
+        (And expr1 expr2) -> makeApp2 ++ [Pushfun "And"] ++ translateExpr expr1 ++ translateExpr expr2
         (Equals expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Smaller expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Plus expr1 expr2) -> makeApp2 ++ [Pushfun "Plus"] ++ translateExpr expr1 ++ translateExpr expr2
