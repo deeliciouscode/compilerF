@@ -10,20 +10,20 @@ import Lexer
 import DataStructures
 
 {--
+data Emulator = Memory Register
 Data Memory = Code Stack Global Heap
+
 data Code = Code [Instructions]
 data Stack = Stack
 data Global = Global [GlobalAddress]
 data Heap = Heap
 
 data Registers a = Instructions a | Address a
-
 data Address = Top Int | ProgramCounter Int
 
 
 
 
-data Emulator = Memory Register Instructions
 
 data FunctionReg = FunctionReg [(String, CodeIndex)]
 
@@ -45,7 +45,7 @@ data Instructions =
     Reset |
     Pushparam Int |
     Makeapp |
-    Slide Expr |
+    Slide Int |
     Return |
     Halt |
     Call |
@@ -53,7 +53,7 @@ data Instructions =
     Operator Expr |
     Alloc |
     SlideLet Expr |
-    Update
+    Update Int
     deriving (Show)
 
 translateProg :: [Def] -> [Instructions]
@@ -64,28 +64,29 @@ translateDef :: Def -> [Instructions] -> [Instructions]
 translateDef def list =
     case def of
         VarDef name expr -> translateVar name expr list
-        FuncDef name args expr -> translateFunc name args expr list
+        FuncDef name args expr -> translateFunc name args expr list -- ++ [Update, Slide 1, Unwind, Call, Return]
 
 translateVar :: String -> Expr -> [Instructions] -> [Instructions]
-translateVar name expr list = Prelude.reverse (Pushfun name : translateExpr expr ++ list)
+translateVar name expr list = Pushfun name : translateExpr expr ++ list
 
 translateFunc :: String -> [Arg] -> Expr -> [Instructions] -> [Instructions]
-translateFunc name args expr list = Prelude.reverse(Pushfun name : translateArgs args ++ translateExpr expr ++ list)
+translateFunc name args expr list = Pushfun name : translateArgs args ++ translateExpr expr ++ list
 
 -- TODO Implement cases Var & Let;
 translateExpr :: Expr -> [Instructions]
 translateExpr expr =
     case expr of
         Var a -> [Pushfun a]
-        Let locDefs expr -> translateLocDefs locDefs
+        -- Let ((LocDef name (expr):xs) (Expr a) -> translateLocDefs locDefs : translateExpr a
+        Let a b -> Prelude.reverse(translateLocDefs a) ++ translateExpr b
         Int a -> [Pushval (Int a)]
         Bool a -> [Pushval (Bool a)]
         (Or expr1 expr2) -> makeApp2 ++ [Pushfun "Or"] ++ translateExpr expr1 ++ translateExpr expr2
-        (And expr1 expr2) -> makeApp2 ++ [Pushfun "And"] ++ translateExpr expr1 ++ translateExpr expr2
+        (And expr1 expr2) -> translateExpr expr2 ++ translateExpr expr1 ++ [Pushfun "And"] ++ makeApp2
         (Not expr) -> [Makeapp] ++ [Pushfun "Not"] ++ translateExpr expr
         (Equals expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
         (Smaller expr1 expr2) -> makeApp2 ++ [Pushfun "Equals"] ++ translateExpr expr1 ++ translateExpr expr2
-        (Plus expr1 expr2) -> makeApp2 ++ [Pushfun "Plus"] ++ translateExpr expr1 ++ translateExpr expr2
+        (Plus expr1 expr2) -> translateExpr expr2 ++ translateExpr expr1 ++ [Pushfun "Plus"] ++ makeApp2 
         (Minus expr1 expr2) -> makeApp2 ++ [Pushfun "Minus"] ++ translateExpr expr1 ++ translateExpr expr2
         (Neg a) -> [Pushfun "Neg"] ++ translateExpr a
         (Mult expr1 expr2) -> makeApp2 ++  [Pushfun "Mult"] ++ translateExpr expr1 ++ translateExpr expr2
@@ -100,6 +101,7 @@ makeApp3 = [Makeapp, Makeapp, Makeapp]
 
 translateLocDefs :: [LocDef] -> [Instructions]
 translateLocDefs ((LocDef name expr):xs) = translateLocDefs xs ++ translateExpr expr ++ Pushfun name : []
+translateLocDefs [] = []
 
 
 translateArgs :: [Arg] -> [Instructions]
@@ -118,9 +120,9 @@ testProg3 = [VarDef "a" (Int 1) ,VarDef "b" (Plus (Var "a") (Int 2))]
 
 testProg4 = [FuncDef "func" ["a","b","c"] (And (Bool True) (Bool False))]
 
+testProg5 = [VarDef "x" (Let [LocDef "a" (Int 8), LocDef "b" (Int 13)] (Plus (Var "a") (Var "b")))]
 
 --- TODO functions Slide, Update, LetSlide, 
-
 
 
 
@@ -128,8 +130,39 @@ testProg4 = [FuncDef "func" ["a","b","c"] (And (Bool True) (Bool False))]
 -- translateExpr (Or expr1 expr2) = translate2Expr (expr1 expr2) ++ Pushfun "Or"  ++ Makeapp : []
 
 --         APP
---     APP     False
--- Or      True
+--     APP     b
+-- Plus    a
 
 
 -- translate2Expr expr1 expr2 = translateExpr expr2 ++ translateExpr2 ++ Makeapp
+
+
+falseFuncInstructions :: [Instructions]
+falseFuncInstructions =  [Pushval (Bool False),
+    Update 0,
+    Slide 1,
+    Unwind,
+    Call,
+    Return]
+
+
+trueFuncInstructions :: [Instructions]
+trueFuncInstructions =  [Pushval (Bool True),
+    Update 0,
+    Slide 1,
+    Unwind,
+    Call,
+    Return]
+
+orFn :: [Instructions]
+orFn = [
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator Or,
+    Update 2,
+    Slide 3,
+    Return]
