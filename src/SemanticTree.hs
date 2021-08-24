@@ -10,29 +10,31 @@ import Lexer
 import DataStructures
 
 {--
-Data Emulator = Memory Register Instructions
-
 Data Memory = Code Stack Global Heap
+data Code = Code [Instructions]
+data Stack = Stack
+data Global = Global [GlobalAddress]
+data Heap = Heap
 
-Data Stack = Stack
+data Registers a = Instructions a | Address a
 
-Data Register = InstructionReg TopReg ProgramCounter
+data Address = Top Int | ProgramCounter Int
+
+
+
+
+data Emulator = Memory Register Instructions
 
 data FunctionReg = FunctionReg [(String, CodeIndex)]
 
-data Code = Code [Instructions]
 data HeapAddress = HeapAdress APP | HeapAdress GlobalAddress |
 HeapAdress VAL
 
 data GlobalAddress = DEF String Int CodeAddress
 
-data Global = Global [GlobalAddress]
 
 data Store = Store Global Code
 
-data InstructionRegister = Int
-data TopRegister = Int
-data ProgramCounter = Int
 data CompiledCode a = CompiledCode [Instructions a]
 --}
 
@@ -67,6 +69,9 @@ translateDef def list =
 translateVar :: String -> Expr -> [Instructions] -> [Instructions]
 translateVar name expr list = Prelude.reverse (Pushfun name : translateExpr expr ++ list)
 
+translateFunc :: String -> [Arg] -> Expr -> [Instructions] -> [Instructions]
+translateFunc name args expr list = Prelude.reverse(Pushfun name : translateArgs args ++ translateExpr expr ++ list)
+
 -- TODO Implement cases Var & Let;
 translateExpr :: Expr -> [Instructions]
 translateExpr expr =
@@ -96,7 +101,6 @@ makeApp3 = [Makeapp, Makeapp, Makeapp]
 translateLocDefs :: [LocDef] -> [Instructions]
 translateLocDefs ((LocDef name expr):xs) = translateLocDefs xs ++ translateExpr expr ++ Pushfun name : []
 
-translateFunc name args expr list = Pushfun name : translateArgs args ++ translateExpr expr ++ list
 
 translateArgs :: [Arg] -> [Instructions]
 translateArgs args = translateLocalEnv (createLocalEnv args [])
