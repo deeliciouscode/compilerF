@@ -9,18 +9,15 @@ type Name = String
 
 type Prog = [Def]
 
-data Def = FuncDef Name Args Expr | VarDef Name Expr | Deps
-  deriving (Show)
-
 type Args = [Arg]
 
 type LocDefs = [LocDef]
 
+data Def = FuncDef Name Args Expr | VarDef Name Expr | Deps
+  deriving (Show)
+
 data LocDef = LocDef Name Expr | LDeps
   deriving (Show)
-  
-
-
 
 data Instructions 
   = Pushfun String 
