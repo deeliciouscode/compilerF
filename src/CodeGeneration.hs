@@ -1,4 +1,4 @@
-module SemanticTree where
+module CodeGeneration where
 import Data.Maybe
 import Data.Map
 
@@ -77,4 +77,4 @@ testProg4 = [FuncDef "func" ["a","b","c"] (And (Bool True) (Bool False))]
 
 testProg5 = [VarDef "x" (Let [LocDef "a" (Int 8), LocDef "b" (Int 13)] (Plus (Var "a") (Var "b")))]
 
---- TODO functions Slide, Update, LetSlide, 
+

@@ -148,14 +148,15 @@ mLess = [Pushparam 1
     ]
 
 -- (* ternaerer if-Operator *)
-mIf = [Pushparam 1,
-    Unwind,
-    Call,
-    Pushparam 3,
-    Pushparam 5,
-    Operator If,
-    Update 3,
-    Slide 4,
-    Unwind,
-    Call,
-    Return]
+mIf = [Pushparam 1
+    , Unwind
+    , Call
+    , Pushparam 3
+    , Pushparam 5
+    , Operator If
+    , Update 3
+    , Slide 4
+    , Unwind
+    , Call
+    , Return
+    ]
