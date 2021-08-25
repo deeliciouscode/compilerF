@@ -19,6 +19,27 @@ type LocDefs = [LocDef]
 data LocDef = LocDef Name Expr | LDeps
   deriving (Show)
   
+
+
+
+data Instructions 
+  = Pushfun String 
+  |Pushval Expr 
+  |Reset 
+  |Pushparam Int 
+  |Makeapp 
+  |Slide Int 
+  |Return 
+  |Halt 
+  |Call 
+  |Unwind 
+  |Operator Expr 
+  |Alloc 
+  |SlideLet Expr 
+  |Update Int
+  deriving (Show)  
+
+  
 data Expr
   = Let LocDefs Expr
   | If Expr Expr Expr

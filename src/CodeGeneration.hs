@@ -10,48 +10,6 @@ import Helpers
 import Lexer
 import DataStructures
 
-{--
-data Emulator = Memory Register
-Data Memory = Code Stack Global Heap
-
-data Code = Code [Instructions]
-data Stack = Stack
-data Global = Global [GlobalAddress]
-data Heap = Heap
-
-data Registers a = Instructions a | Address a
-data Address = Top Int | ProgramCounter Int
-
-data FunctionReg = FunctionReg [(String, CodeIndex)]
-
-data HeapAddress = HeapAdress APP | HeapAdress GlobalAddress |
-HeapAdress VAL
-
-data GlobalAddress = DEF String Int CodeAddress
-
-
-data Store = Store Global Code
-
-data CompiledCode a = CompiledCode [Instructions a]
---}
-
-
-data Instructions =
-    Pushfun String |
-    Pushval Expr |
-    Reset |
-    Pushparam Int |
-    Makeapp |
-    Slide Int |
-    Return |
-    Halt |
-    Call |
-    Unwind |
-    Operator Expr |
-    Alloc |
-    SlideLet Expr |
-    Update Int
-    deriving (Show)
 
 translateProg :: [Def] -> [Instructions]
 translateProg xs = Prelude.foldr (\ x -> (++) (translateDef x [])) [] xs
@@ -120,15 +78,3 @@ testProg4 = [FuncDef "func" ["a","b","c"] (And (Bool True) (Bool False))]
 testProg5 = [VarDef "x" (Let [LocDef "a" (Int 8), LocDef "b" (Int 13)] (Plus (Var "a") (Var "b")))]
 
 --- TODO functions Slide, Update, LetSlide, 
-
-
-
-
--- translateExpr (Or expr1 expr2) = translate2Expr (expr1 expr2) ++ Pushfun "Or"  ++ Makeapp : []
-
---         APP
---     APP     b
--- Plus    a
-
-
--- translate2Expr expr1 expr2 = translateExpr expr2 ++ translateExpr2 ++ Makeapp
