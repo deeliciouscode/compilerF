@@ -1,3 +1,4 @@
+module SemanticTree where
 import Data.Maybe
 import Data.Map
 
@@ -20,10 +21,6 @@ data Heap = Heap
 
 data Registers a = Instructions a | Address a
 data Address = Top Int | ProgramCounter Int
-
-
-
-
 
 data FunctionReg = FunctionReg [(String, CodeIndex)]
 
@@ -135,34 +132,3 @@ testProg5 = [VarDef "x" (Let [LocDef "a" (Int 8), LocDef "b" (Int 13)] (Plus (Va
 
 
 -- translate2Expr expr1 expr2 = translateExpr expr2 ++ translateExpr2 ++ Makeapp
-
-
-falseFuncInstructions :: [Instructions]
-falseFuncInstructions =  [Pushval (Bool False),
-    Update 0,
-    Slide 1,
-    Unwind,
-    Call,
-    Return]
-
-
-trueFuncInstructions :: [Instructions]
-trueFuncInstructions =  [Pushval (Bool True),
-    Update 0,
-    Slide 1,
-    Unwind,
-    Call,
-    Return]
-
-orFn :: [Instructions]
-orFn = [
-    Pushparam 1,
-    Unwind,
-    Call,
-    Pushparam 3,
-    Unwind,
-    Call,
-    Operator Or,
-    Update 2,
-    Slide 3,
-    Return]
