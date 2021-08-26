@@ -9,7 +9,7 @@ import Helpers
 import Lexer
 import DataStructures
 
-import SemanticTree
+import CodeGeneration
 
 
 mInit = [Reset, Pushfun "main", Reduce, Halt]

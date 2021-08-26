@@ -34,9 +34,9 @@ data Instructions
   |Alloc 
   |SlideLet Expr 
   |Update Int
+  |EmptyInstruction
   deriving (Show)  
 
-  
 data Expr
   = Let LocDefs Expr
   | If Expr Expr Expr

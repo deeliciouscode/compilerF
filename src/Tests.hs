@@ -202,7 +202,15 @@ G Machine
      Return
 
 
-übkons(+ a, b)
+übkons(+ + a c b)
+
+üb (b)
+üb (c,Pos 2)
+Makeapp
+üb (a, Pos 2)
+Pushfun plus
+Makeapp
+üb (plus)
 Update 2
 Slide 4
 Unwind
@@ -307,3 +315,218 @@ Return
 -- Üb(b, 2) = pushparam 2
 -- Üb(c, 3 + 1) = pushparam 4
 -- Üb(a, 1 + 2) = pushparam 3
+
+
+
+
+
+üb (b)
+üb (c,Pos 2)
+üb (a, Pos 2)
+Pushfun plus
+Makeapp
+üb (plus)
+
+
+
+
+
+
+
+Üb(+bc)
+Üb(+a)
+Makeapp
+Update 2
+Slide 4
+Unwind
+Call
+Return
+
+
+
+Üb(c)
+Üb(+b)
+MakeApp
+Üb(a)
+Üb(+)
+Makeapp
+Makeapp
+Update 2
+Slide 4
+Unwind
+Call
+Return
+
+
+
+Üb(c)
+Üb(b)
+Üb(+)
+MakeApp
+MakeApp
+Üb(a)
+Üb(+)
+Makeapp
+Makeapp
+Update 2
+Slide 4
+Unwind
+Call
+Return
+
+
+
+
+tr(b)
+tr(c)
+tr(+(+ a))
+makeapp
+makeapp
+Update 2
+Slide 4
+Unwind
+Call
+Return
+
++ 6 )
+
+
+
+
+tr(6)
+tr(+)
+makeapp
+makeapp
+Update 2
+Slide 4
+Unwind
+Call
+Return
+
+
+(((+ ((+ a) b) c)
+
+pushfun a
+makeapp
+Update 2
+Slide 4
+Unwind
+Call
+Return
+
+
+
+((+ 6  )(( * 4) 3))
+
++ + 6 4 3
++ 6 * 4 3
+
+
+
+
+
+üb(* 43)
+üb(+ 6)
+Makeapp
+
+üb(* 43)
+üb 6
+üb +
+Makeapp
+Makeapp
+
+üb 3
+üb((* 4)
+Makeapp
+üb 6
+üb +
+Makeapp
+Makeapp
+
+üb 3
+üb(4)
+üb *
+Makeapp
+Makeapp
+üb 6
+üb +
+Makeapp
+Makeapp
+
+
+App Tree -> Instruction -> App Trees
+
+
+
+
+
+(+ + a b)
+
+(((Plus ((Plus a) c) b)
+
+
+(App (App Plus (App (App Plus a) b)) c)
+
+
+
+((((+ +) a) b) c)
++ (+ a b) c
+
+
+üb c
+üb (+ (+ a b))
+makeapp
+
+üb c
+üb ((+ a) b))
+pushfun +
+makeapp
+makeapp
+
+
+üb c
+üb b
+üb (+ a)
+makeapp
+pushfun +
+makeapp
+makeapp
+
+üb 3
+üb 4
+üb 6
+üb (+)
+makeapp
+makeapp
+pushfun +
+makeapp
+makeapp
+
+
+
+
+
+
+
+üb c
+üb b
+üb (((+ +) a))
+makeapp
+makeapp
+
+
+üb c
+üb b
+üb a
+üb (((+ +)))
+makeapp
+makeapp
+makeapp
+
+
+
+
+
+
+
++ 4 + 
