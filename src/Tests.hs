@@ -525,8 +525,94 @@ makeapp
 
 
 
+(+ 1) ((+ 2) 3)
+
+
+üb ((+ 2) 3)
+üb (+ 1)
+makeapp
+
+
+üb ((+ 2) 3)
+pushval 1
+pushfun +
+makeapp
+makeapp
+
+
+pushval 3
+üb ((+ 2))
+makeapp
+pushval 1
+pushfun +
+makeapp
+makeapp
+
+
+pushval 3
+pushval 2
+pushfun + 
+makeapp
+makeapp
+pushval 1
+pushfun +
+makeapp
+makeapp
 
 
 
 
-+ 4 + 
+(+ ((+ 1) 2)) 3
+
+
+pushval 3
+üb (+ ((+ 1) 2))
+makeapp
+
+pushval 3
+üb ((+ 1) 2)
+pushfun + 
+makeapp
+makeapp
+
+pushval 3
+pushval 2
+üb ((+ 1))
+makeapp
+pushfun + 
+makeapp
+makeapp
+
+pushval 3
+pushval 2
+pushval 1
+pushfun +
+makeapp
+makeapp
+pushfun + 
+makeapp
+makeapp
+
+
+
+üb 3
+üb (((+) +) 1) 2)
+makeapp
+
+
+
+
+
+
++ 4) +) 5) 6)
+
+pushval 6
+üb + 4) +) 5)
+makeapp
+
+
+pushval 6
+pushval 5
+üb + 4) +))
+makeapp
+makeapp

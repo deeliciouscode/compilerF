@@ -17,7 +17,7 @@ data Def = FuncDef Name Args Expr | VarDef Name Expr | Deps
   deriving (Show)
 
 data LocDef = LocDef Name Expr | LDeps
-  deriving (Show)
+  deriving (Show) 
 
 data Instructions 
   = Pushfun String 

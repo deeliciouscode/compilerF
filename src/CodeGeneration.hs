@@ -1,99 +1,101 @@
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module CodeGeneration where
 import Data.Maybe
 import Data.Map
-
 import Parser
 -- import Relude
 import Data.Text
-
 import Helpers
 import Lexer
 import DataStructures
+import Instructions
 
 
---translateProg xs = Prelude.foldr (\ x -> (++) (translateDef x [])) [] xs
+translateProg xs = Prelude.foldr (\ x -> (++) (translateDef x [])) [] xs
+
 
 translateDef :: Def -> [Instructions] -> [Instructions]
 translateDef def list =
     case def of
         VarDef name expr -> translateVar name expr list
-        FuncDef name args expr -> translateFunc name args expr list
+        FuncDef name args expr -> translateFunc name args expr list (createLocalEnv args 0)
         Deps -> list
 
 translateVar :: String -> Expr -> [Instructions] -> [Instructions]
-translateVar name expr list = translateExpr expr ++ [Update 0, Slide 1, Unwind, Call, Return] ++ list 
+translateVar name expr list = translateExpr expr [] ++ [Update 0, Slide 1, Unwind, Call, Return] ++ list 
 
-translateFunc :: String -> [Arg] -> Expr -> [Instructions] -> [Instructions]
-translateFunc name args expr list = Pushfun name : translateArgs args ++ translateExpr expr ++ [Update 0, Slide 1, Unwind, Call, Return] ++ list
+translateFunc name args expr list localEnv = translateExpr expr localEnv ++ [Update (Prelude.length args), Slide (Prelude.length args + 1), Unwind, Call, Return] ++ list
 
-translateExpr expr = 
+createLocalEnv (x:xs) counter = (x,counter+1) : createLocalEnv xs (counter+1)
+createLocalEnv [] _ = []
+
+isInLocalEnv a ((x,y):xs) = (a == x) || isInLocalEnv a xs
+isInLocalEnv a [] = False
+
+getPos a ((x,y):xs) = if a == x then y else getPos a xs
+getPos a [] = 0
+
+translateExpr :: Expr -> [(String, Int)] -> [Instructions]
+translateExpr expr localEnv = 
     case expr of
-        Var a -> [Pushfun a]
+        Var a -> if isInLocalEnv a localEnv then [Pushparam (getPos a localEnv)] else [Pushfun a]
         Int a -> [Pushval (Int a)]
         Bool a -> [Pushfun (show a)]
-        (Plus expr1 expr2) -> translatePlus (Plus expr1 expr2)
-        (Minus expr expr2) -> translateMinus (Minus expr expr2)
-        (Mult expr expr2) -> translateMult (Mult expr expr2)
-        (Div expr1 expr2) -> translateDiv (Div expr1 expr2)
-        (Or expr expr2) -> translateOr (Or expr expr)
-        (And expr expr2) -> translateAnd (And expr expr2)
-        (Smaller expr expr2) -> translateSmaller (Smaller expr expr2)
-        (Equals expr expr2) -> translateEquals (Equals expr expr2)
-        (Not expr) -> translateExpr expr ++ [Pushfun "Not", Makeapp]
-        (Neg expr) -> translateExpr expr ++ [Pushfun "Negate", Makeapp]
-        (If expr1 expr2 expr3) -> translateIf (If expr1 expr2 expr3)
+        (Plus expr1 expr2) -> translatePlus (Plus expr1 expr2) localEnv
+        (Minus expr expr2) -> translateMinus (Minus expr expr2) localEnv
+        (Mult expr expr2) -> translateMult (Mult expr expr2) localEnv
+        (Div expr1 expr2) -> translateDiv (Div expr1 expr2) localEnv
+        (Or expr expr2) -> translateOr (Or expr expr) localEnv 
+        (And expr expr2) -> translateAnd (And expr expr2) localEnv
+        (Smaller expr expr2) -> translateSmaller (Smaller expr expr2) localEnv
+        (Equals expr expr2) -> translateEquals (Equals expr expr2) localEnv
+        (Not expr) -> translateExpr expr localEnv ++ [Pushfun "Not", Makeapp] 
+        (Neg expr) -> translateExpr expr localEnv ++ [Pushfun "Negate", Makeapp]
+        (If expr1 expr2 expr3) -> translateIf (If expr1 expr2 expr3) localEnv
+        (Let locdefs expr) -> translateLet locdefs expr (createLetEnv locDefs localEnv)
         
-translatePlus (Plus expr EmptyExpr) = translateExpr expr ++ [Pushfun "+", Makeapp]
-translatePlus (Plus expr1 expr2) = translateExpr expr2 ++ translateExpr (Plus expr1 EmptyExpr) ++ [Makeapp]
+
+translateLet (x:xs) expr localLetEnv = 
+
+updatePos = Prelude.map (\(x,y) -> (x,y+1))
+
+translatePlus (Plus expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "+", Makeapp]
+translatePlus (Plus expr1 expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (Plus expr1 EmptyExpr) (updatePos localEnv) ++ [Makeapp]
         
-translateMinus (Minus expr EmptyExpr) = translateExpr expr ++ [Pushfun "+", Makeapp]
-translateMinus (Minus expr1 expr2) = translateExpr expr2 ++ translateExpr (Minus expr1 EmptyExpr) ++ [Makeapp]
+translateMinus (Minus expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "+", Makeapp]
+translateMinus (Minus expr1 expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (Minus expr1 EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateMult (Mult expr EmptyExpr) = translateExpr expr ++ [Pushfun "*", Makeapp]
-translateMult (Mult expr1 expr2) = translateExpr expr2 ++ translateExpr (Mult expr1 EmptyExpr) ++ [Makeapp]
+translateMult (Mult expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "*", Makeapp]
+translateMult (Mult expr1 expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (Mult expr1 EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateDiv (Div expr EmptyExpr) = translateExpr expr ++ [Pushfun "/", Makeapp]
-translateDiv (Div expr1 expr2) = translateExpr expr2 ++ translateExpr (Div expr1 EmptyExpr) ++ [Makeapp]
+translateDiv (Div expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "/", Makeapp]
+translateDiv (Div expr1 expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (Div expr1 EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateOr (Or expr EmptyExpr) = translateExpr expr ++ [Pushfun "|", Makeapp]
-translateOr (Or expr expr2) = translateExpr expr2 ++ translateExpr (Or expr EmptyExpr) ++ [Makeapp]
+translateOr (Or expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "|", Makeapp]
+translateOr (Or expr expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (Or expr EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateAnd (And expr EmptyExpr) = translateExpr expr ++ [Pushfun "&", Makeapp]
-translateAnd (And expr expr2) = translateExpr expr2 ++ translateExpr (And expr EmptyExpr) ++ [Makeapp]
+translateAnd (And expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "&", Makeapp]
+translateAnd (And expr expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (And expr EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateSmaller (Smaller expr EmptyExpr) = translateExpr expr ++ [Pushfun "<", Makeapp]
-translateSmaller (Smaller expr expr2) = translateExpr expr2 ++ translateExpr (Smaller expr EmptyExpr) ++ [Makeapp]
+translateSmaller (Smaller expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "<", Makeapp]
+translateSmaller (Smaller expr expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (Smaller expr EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateEquals (Equals expr EmptyExpr) = translateExpr expr ++ [Pushfun "==", Makeapp]
-translateEquals (Equals expr (Bool a)) = translateExpr (Bool a) ++ translateExpr (Equals expr EmptyExpr) ++ [Makeapp]
-translateEquals (Equals expr (Int a)) = translateExpr (Int a) ++ translateExpr (Equals expr EmptyExpr) ++ [Makeapp]
+translateEquals (Equals expr EmptyExpr) localEnv = translateExpr expr localEnv ++ [Pushfun "==", Makeapp]
+translateEquals (Equals expr expr2) localEnv = translateExpr expr2 localEnv ++ translateExpr (Equals expr EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateIf (If expr1 EmptyExpr EmptyExpr) = translateExpr expr1 ++ [Pushfun "if"] ++ [Makeapp]
-translateIf (If expr1 expr2 EmptyExpr) = translateExpr expr2 ++ translateExpr (If expr1 EmptyExpr EmptyExpr) ++ [Makeapp]
-translateIf (If expr1 expr2 expr3) = translateExpr expr3 ++ translateExpr (If expr1 expr2 EmptyExpr) ++ [Makeapp]
+translateIf (If expr1 EmptyExpr EmptyExpr) localEnv = translateExpr expr1 localEnv ++ [Pushfun "if"] ++ [Makeapp]
+translateIf (If expr1 expr2 EmptyExpr) localEnv = translateExpr expr2 localEnv ++ translateExpr (If expr1 EmptyExpr EmptyExpr) (updatePos localEnv)  ++ [Makeapp]
+translateIf (If expr1 expr2 expr3) localEnv = translateExpr expr3 localEnv ++ translateExpr (If expr1 expr2 EmptyExpr) (updatePos localEnv) ++ [Makeapp]
 
-translateProg (x:xs) = translateDef x [] ++ translateProg xs
-translateProg [] = []
-
-testProg2 = [VarDef "a" (Plus (Int 1) (Int 2))]
+testProg2 = [FuncDef "a" ["a", "b"] (Plus (Var "a") (Var "b"))]
 testProg8 = [VarDef "a" (If (Bool True) (Int 1) (Int 2))] ++ testProg2
 
 
-
+{--
 translateLocDefs :: [LocDef] -> [Instructions]
 translateLocDefs ((LocDef name expr):xs) = translateLocDefs xs ++ translateExpr expr ++ Pushfun name : []
 translateLocDefs [] = []
 
-
-translateArgs :: [Arg] -> [Instructions]
-translateArgs args = translateLocalEnv (createLocalEnv args [])
-
-createLocalEnv (x:xs) list =  (x, Prelude.length (x:xs)) : createLocalEnv xs list
-createLocalEnv [] _  = []
-
-translateLocalEnv = Prelude.map (Pushparam . snd)
-
+--}
 --- Test Cases ---
 
 testProg = [VarDef "a" (Bool True), VarDef "b" (Int 2)]
