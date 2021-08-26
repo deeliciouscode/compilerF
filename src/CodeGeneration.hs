@@ -54,7 +54,7 @@ translateExpr expr localEnv =
         (Let locdefs expr) -> translateLet locdefs expr (createLetEnv locDefs localEnv)
         
 
-translateLet (x:xs) expr localLetEnv = 
+--translateLet (x:xs) expr localLetEnv = 
 
 updatePos = Prelude.map (\(x,y) -> (x,y+1))
 
@@ -89,18 +89,5 @@ translateIf (If expr1 expr2 expr3) localEnv = translateExpr expr3 localEnv ++ tr
 testProg2 = [FuncDef "a" ["a", "b"] (Plus (Var "a") (Var "b"))]
 testProg8 = [VarDef "a" (If (Bool True) (Int 1) (Int 2))] ++ testProg2
 
-
-{--
-translateLocDefs :: [LocDef] -> [Instructions]
-translateLocDefs ((LocDef name expr):xs) = translateLocDefs xs ++ translateExpr expr ++ Pushfun name : []
-translateLocDefs [] = []
-
---}
---- Test Cases ---
-
-testProg = [VarDef "a" (Bool True), VarDef "b" (Int 2)]
-testProg3 = [VarDef "a" (Int 1) ,VarDef "b" (Plus (Var "a") (Int 2))]
-testProg4 = [FuncDef "func" ["a","b","c"] (And (Bool True) (Bool False))]
-testProg5 = [VarDef "x" (Let [LocDef "a" (Int 8), LocDef "b" (Int 13)] (Plus (Var "a") (Var "b")))]
 
 
