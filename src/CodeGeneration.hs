@@ -1,12 +1,19 @@
 module CodeGeneration where
 import Data.Maybe
+import Data.Map
 import Parser
+-- import Relude
+import Data.Text
 import Helpers
 import Lexer
 import DataStructures
 import Instructions
 
+<<<<<<< HEAD
 translateProg xs = foldr (\ x -> (++) (translateDef x [])) [] xs
+=======
+translateProg xs = Prelude.foldr (\ x -> (++) (translateDef x [])) [] xs
+>>>>>>> bed7801c3f756064a75ec6ab99512cda2767bd4a
 
 translateDef :: Def -> [Instructions] -> [Instructions]
 translateDef def list =
@@ -18,12 +25,19 @@ translateDef def list =
 translateVar :: String -> Expr -> [Instructions] -> [Instructions]
 translateVar name expr list = translateExpr expr [] ++ [Update 0, Slide 1, Unwind, Call, Return] ++ list 
 
+<<<<<<< HEAD
 translateFunc name args expr list localEnv = translateExpr expr localEnv ++ [Update (length args), Slide (length args + 1), Unwind, Call, Return] ++ list
+=======
+translateFunc name args expr list localEnv = translateExpr expr localEnv ++ [Update (Prelude.length args), Slide (Prelude.length args + 1), Unwind, Call, Return] ++ list
+>>>>>>> bed7801c3f756064a75ec6ab99512cda2767bd4a
 
 createLocalEnv (x:xs) counter = (x,counter) : createLocalEnv xs (counter+1)
 createLocalEnv [] _ = []
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> bed7801c3f756064a75ec6ab99512cda2767bd4a
 translateExpr :: Expr -> [(String, Int)] -> [Instructions]
 translateExpr expr localEnv = 
     case expr of
@@ -41,12 +55,17 @@ translateExpr expr localEnv =
         (Not expr) -> translateExpr expr localEnv ++ push "Not"
         (Neg expr) -> translateExpr expr localEnv ++ push "Negate"
         e@(If expr1 expr2 expr3) -> translateIf e localEnv
+<<<<<<< HEAD
         (Let locdefs expr) -> translateLet locdefs expr (createLetEnv locdefs localEnv 0)
         
 
 -- createLetEnv ((LocDef name expr):xs) localEnv counter = (name,counter+1) : createLetEnv xs localEnv counter+1 : localEnv
 -- createLetEnv [] _ _ = []
 
+=======
+        -- (Let locdefs expr) -> translateLet locdefs expr (createLetEnv locDefs localEnv)
+        
+>>>>>>> bed7801c3f756064a75ec6ab99512cda2767bd4a
 -- translateLet (x:xs) expr localLetEnv = 
 
 translatePlus (Plus expr EmptyExpr) localEnv = translateExpr expr localEnv ++ push "+"
@@ -83,7 +102,11 @@ isInLocalEnv a [] = False
 
 getPos a ((x,y):xs) = if a == x then y else getPos a xs
 getPos a [] = 0
+<<<<<<< HEAD
 updatePos = map (\(x,y) -> (x,y+1))
+=======
+updatePos = Prelude.map (\(x,y) -> (x,y+1))
+>>>>>>> bed7801c3f756064a75ec6ab99512cda2767bd4a
 
 makeapp a = a ++ [Makeapp]
 push op = [Pushfun op, Makeapp]
