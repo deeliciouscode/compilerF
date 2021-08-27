@@ -7,33 +7,8 @@ import Lexer
 import DataStructures
 import Instructions
 
-isInEnv a ((x,y):xs) = (a == x) || isInEnv a xs
-isInEnv a [] = False
-
-getPos a ((x,y):xs) = if a == x then y else getPos a xs
-getPos a [] = 0
-
-incrementPos ([], a) = ([], increment a)
-incrementPos (a, b) = (increment a, b)
-
--- incrementPos ((x,y):xs, a) = ((x,y+1):xs, a)
-
-increment a = map(\(x,y) -> (x,y+1)) a
-
--- updatePos a = map(\(x,y) -> (x,a))
-
-updateGlobalEnv letEnv localEnv = (letEnv, localEnv)
-
-
--- createGlobalEnv letEnv args i = (letEnv, )
-
-createLocalEnv (x:xs) counter = (x,counter) : createLocalEnv xs (counter+1)
-createLocalEnv [] _ = []
-
-createLetEnv ((LocDef name expr):xs) (letEnv, localEnv) counter = createLetEnv xs ([(name,counter+1)] ++ letEnv, localEnv) (counter+1)
-createLetEnv [] (letEnv, localEnv) counter =  (letEnv, localEnv)
-
-translateProg xs = Prelude.foldr (\ x -> (++) (translateDef x [])) [] xs
+-------------------------- Translation--------------------------
+translateProg xs = foldr (\ x -> (++) (translateDef x [])) [] xs
 
 translateDef def list =
     case def of
@@ -43,13 +18,7 @@ translateDef def list =
 
 translateVar name expr list = translateExpr expr ([],[]) ++ [Update 0, Slide 1, Unwind, Call, Return] ++ list 
 
-
 translateFunc name args expr list globalEnv = translateExpr expr globalEnv ++ [Update (Prelude.length args), Slide (Prelude.length args + 1), Unwind, Call, Return] ++ list
-
-translateLet locdefs expr (letEnv, localEnv) = translateLetExpr locdefs (letEnv, localEnv) ++ translateExpr expr (letEnv, localEnv)  ++ [SlideLet (Prelude.length letEnv)] 
-
-translateLetExpr ((LocDef name expr):xs) (letEnv, localEnv) = translateExpr expr (letEnv, localEnv) ++ [Alloc, Makeapp] ++ translateLetExpr xs (incrementPos (letEnv, localEnv))
-translateLetExpr [] _ = []
 
 translateExpr expr (letEnv, locEnv) = 
     case expr of
@@ -68,6 +37,8 @@ translateExpr expr (letEnv, locEnv) =
         (Neg expr) -> translateExpr expr (letEnv, locEnv) ++ push "Negate"
         e@(If expr1 expr2 expr3) -> translateIf e (letEnv, locEnv)
         (Let locdefs expr) -> translateLet locdefs expr (createLetEnv locdefs ([],locEnv) 0)
+
+translateLet locdefs expr env@(letEnv, localEnv) = translateLetExpr locdefs env ++ translateExpr expr env ++ [SlideLet (length letEnv)] 
 
 translatePlus (Plus expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "+"
 translatePlus (Plus expr1 expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (Plus expr1 EmptyExpr) (incrementPos globalEnv)
@@ -97,12 +68,33 @@ translateIf (If expr1 EmptyExpr EmptyExpr) globalEnv = translateExpr expr1 globa
 translateIf (If expr1 expr2 EmptyExpr) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (If expr1 EmptyExpr EmptyExpr) (incrementPos globalEnv)
 translateIf (If expr1 expr2 expr3) globalEnv = makeapp $ translateExpr expr3 globalEnv ++ translateExpr (If expr1 expr2 EmptyExpr) (incrementPos globalEnv)
 
---------------------Helpers-------------------------------
+translateLetExpr ((LocDef name expr):xs) (letEnv, localEnv) = translateExpr expr (letEnv, localEnv) ++ [Alloc, Makeapp] ++ translateLetExpr xs (incrementPos (letEnv, localEnv))
+translateLetExpr [] _ = []
+
+--------------------Environments--------------------
+createLocalEnv (x:xs) counter = (x,counter) : createLocalEnv xs (counter+1)
+createLocalEnv [] _ = []
+
+createLetEnv ((LocDef name expr):xs) (letEnv, localEnv) counter = createLetEnv xs ([(name,counter+1)] ++ letEnv, localEnv) (counter+1)
+createLetEnv [] (letEnv, localEnv) counter =  (letEnv, localEnv)
+
+--------------------Helpers--------------------
 makeapp a = a ++ [Makeapp]
 push op = [Pushfun op, Makeapp]
 
+isInEnv a ((x,y):xs) = (a == x) || isInEnv a xs
+isInEnv a [] = False
 
---- Test Cases ---
+getPos a ((x,y):xs) = if a == x then y else getPos a xs
+getPos a [] = 0
+
+incrementPos ([], a) = ([], increment a)
+incrementPos (a, b) = (increment a, b)
+
+increment = map(\(x,y) -> (x,y+1))
+
+
+--------------------Test Cases--------------------
 testProg2 = [FuncDef "a" ["a", "b"] (Plus (Var "a") (Var "b"))]
 testProg8 = [VarDef "a" (If (Bool True) (Int 1) (Int 2))] ++ testProg2
 testProg = [VarDef "a" (Bool True), VarDef "b" (Int 2)]
