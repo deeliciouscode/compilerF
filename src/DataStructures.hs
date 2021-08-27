@@ -32,7 +32,7 @@ data Instructions
   |Unwind 
   |Operator Expr 
   |Alloc 
-  |SlideLet Expr 
+  |SlideLet Int 
   |Update Int
   |EmptyInstruction
   deriving (Show)  
