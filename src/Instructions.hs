@@ -13,21 +13,21 @@ import DataStructures
 
 mInit = [Reset, Pushfun "main", Call, Halt]
 
-mFalse = [Pushval (Bool False)
-    , Update 0
-    , Slide 1
-    , Unwind
-    , Call
-    , Return
-    ]
+-- mFalse = [Pushval (Bool False)
+--     , Update 0
+--     , Slide 1
+--     , Unwind
+--     , Call
+--     , Return
+--     ]
 
-mTrue = [Pushval (Bool True)
-    , Update 0
-    , Slide 1
-    , Unwind
-    , Call
-    , Return
-    ]
+-- mTrue = [Pushval (Bool True)
+--     , Update 0
+--     , Slide 1
+--     , Unwind
+--     , Call
+--     , Return
+--     ]
 
 -- -- (* unaerer negate-Operator *)
 -- mNegate = [Pushparam 1

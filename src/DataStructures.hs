@@ -38,22 +38,22 @@ data Instructions
   deriving (Show)  
 
 data Expr
-  = Let LocDefs Expr
-  | If Expr Expr Expr
-  | Var String
-  | Int Int 
-  | Bool Bool
-  | Or Expr Expr
-  | And Expr Expr
-  | Not Expr
-  | Equals Expr Expr
-  | Smaller Expr Expr
-  | Plus Expr Expr
-  | Minus Expr Expr
-  | Neg Expr
-  | Mult Expr Expr
-  | Div Expr Expr
-  | App Expr Expr
+  = LetX LocDefs Expr
+  | IfX Expr Expr Expr
+  | VarX String
+  | IntX Int 
+  | BoolX Bool
+  | OrX Expr Expr
+  | AndX Expr Expr
+  | NotX Expr
+  | EqualsX Expr Expr
+  | SmallerX Expr Expr
+  | PlusX Expr Expr
+  | MinusX Expr Expr
+  | NegX Expr
+  | MultX Expr Expr
+  | DivX Expr Expr
+  | AppX Expr Expr
   | EmptyExpr
   deriving (Show)
 
