@@ -30,12 +30,14 @@ data Instructions
   |Halt 
   |Call 
   |Unwind 
-  |Operator Expr 
+  |Operator OpInstrConstr
   |Alloc 
   |SlideLet Int 
   |Update Int
   |EmptyInstruction
   deriving (Show)  
+
+data OpInstrConstr = Plus | Minus | Times | DividedBy | Equals | LessThan | Or | Not | If deriving (Show)  
 
 data Expr
   = LetX LocDefs Expr

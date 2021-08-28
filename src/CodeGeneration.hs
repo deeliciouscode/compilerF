@@ -18,7 +18,7 @@ translateDef def list =
 
 translateVar name expr list = translateExpr expr ([],[]) ++ [Update 0, Slide 1, Unwind, Call, Return] ++ list 
 
-translateFunc name args expr list globalEnv = translateExpr expr globalEnv ++ [Update (Prelude.length args), Slide (Prelude.length args + 1), Unwind, Call, Return] ++ list
+translateFunc name args expr list env = translateExpr expr env ++ [Update (Prelude.length args), Slide (Prelude.length args + 1), Unwind, Call, Return] ++ list
 
 translateExpr expr (letEnv, locEnv) = 
     case expr of
@@ -33,49 +33,51 @@ translateExpr expr (letEnv, locEnv) =
         e@(AndX expr expr2) -> translateAnd e (letEnv, locEnv)
         e@(SmallerX expr expr2) -> translateSmaller e (letEnv, locEnv)
         e@(EqualsX expr expr2) -> translateEquals e (letEnv, locEnv)
-        (NotX expr) -> translateExpr expr (letEnv, locEnv) ++ push "NotX"
+        (NotX expr) -> translateExpr expr (letEnv, locEnv) ++ push "Not"
         (NegX expr) -> translateExpr expr (letEnv, locEnv) ++ push "Negate"
         e@(IfX expr1 expr2 expr3) -> translateIf e (letEnv, locEnv)
-        (LetX locdefs expr) -> translateLet locdefs expr (createLetEnv locdefs ([],locEnv) 0)
+        (LetX locdefs expr) -> translateLet locdefs expr (createLetEnv locdefs ([],locEnv) 1) []
 
-translateLet locdefs expr env@(letEnv, localEnv) = translateLetExpr locdefs env ++ translateExpr expr env ++ [SlideLet (length letEnv)] 
+translateLet [] EmptyExpr env@(letEnv, localEnv) instructions = instructions ++ [SlideLet (length letEnv)]
+translateLet [] expr env@(letEnv, localEnv) instructions = instructions ++ translateExpr expr env
+translateLet locdefs expr env@(letEnv, localEnv) [] = translateLetExpr locdefs env [] expr
 
-translatePlus (PlusX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "+"
-translatePlus (PlusX expr1 expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (PlusX expr1 EmptyExpr) (incrementPos globalEnv)
+translateLetExpr [] env@(letEnv, localEnv) instructions globalExpr = translateLet [] EmptyExpr env (instructions ++ translateExpr globalExpr env) 
+translateLetExpr ((LocDef name expr):xs) env@(letEnv, localEnv) instructions globalExpr =  translateLetExpr xs (incrementPos env) (translateExpr expr env ++ [Alloc, Makeapp] ++ instructions) globalExpr
+
+translatePlus (PlusX expr EmptyExpr) env = translateExpr expr env ++ push "+"
+translatePlus (PlusX expr1 expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (PlusX expr1 EmptyExpr) (incrementPos env)
         
-translateMinus (MinusX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push"-"
-translateMinus (MinusX expr1 expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (MinusX expr1 EmptyExpr) (incrementPos globalEnv)
+translateMinus (MinusX expr EmptyExpr) env = translateExpr expr env ++ push"-"
+translateMinus (MinusX expr1 expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (MinusX expr1 EmptyExpr) (incrementPos env)
 
-translateMult (MultX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "*"
-translateMult (MultX expr1 expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (MultX expr1 EmptyExpr) (incrementPos globalEnv)
+translateMult (MultX expr EmptyExpr) env = translateExpr expr env ++ push "*"
+translateMult (MultX expr1 expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (MultX expr1 EmptyExpr) (incrementPos env)
 
-translateDiv (DivX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "/"
-translateDiv (DivX expr1 expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (DivX expr1 EmptyExpr) (incrementPos globalEnv)
+translateDiv (DivX expr EmptyExpr) env = translateExpr expr env ++ push "/"
+translateDiv (DivX expr1 expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (DivX expr1 EmptyExpr) (incrementPos env)
 
-translateOr (OrX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "|"
-translateOrX (OrX expr expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (OrX expr EmptyExpr) (incrementPos globalEnv)
+translateOr (OrX expr EmptyExpr) env = translateExpr expr env ++ push "|"
+translateOr (OrX expr expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (OrX expr EmptyExpr) (incrementPos env)
 
-translateAnd (AndX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "&"
-translateAnd (AndX expr expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (AndX expr EmptyExpr) (incrementPos globalEnv)
+translateAnd (AndX expr EmptyExpr) env = translateExpr expr env ++ push "&"
+translateAnd (AndX expr expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (AndX expr EmptyExpr) (incrementPos env)
 
-translateSmaller (SmallerX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "<"
-translateSmaller (SmallerX expr expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (SmallerX expr EmptyExpr) (incrementPos globalEnv)
+translateSmaller (SmallerX expr EmptyExpr) env = translateExpr expr env ++ push "<"
+translateSmaller (SmallerX expr expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (SmallerX expr EmptyExpr) (incrementPos env)
 
-translateEquals (EqualsX expr EmptyExpr) globalEnv = translateExpr expr globalEnv ++ push "=="
-translateEquals (EqualsX expr expr2) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (EqualsX expr EmptyExpr) (incrementPos globalEnv)
+translateEquals (EqualsX expr EmptyExpr) env = translateExpr expr env ++ push "=="
+translateEquals (EqualsX expr expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (EqualsX expr EmptyExpr) (incrementPos env)
 
-translateIf (IfX expr1 EmptyExpr EmptyExpr) globalEnv = translateExpr expr1 globalEnv ++ push "if"
-translateIf (IfX expr1 expr2 EmptyExpr) globalEnv = makeapp $ translateExpr expr2 globalEnv ++ translateExpr (IfX expr1 EmptyExpr EmptyExpr) (incrementPos globalEnv)
-translateIf (IfX expr1 expr2 expr3) globalEnv = makeapp $ translateExpr expr3 globalEnv ++ translateExpr (IfX expr1 expr2 EmptyExpr) (incrementPos globalEnv)
-
-translateLetExpr ((LocDef name expr):xs) (letEnv, localEnv) = translateExpr expr (letEnv, localEnv) ++ [Alloc, Makeapp] ++ translateLetExpr xs (incrementPos (letEnv, localEnv))
-translateLetExpr [] _ = []
+translateIf (IfX expr1 EmptyExpr EmptyExpr) env = translateExpr expr1 env ++ push "if"
+translateIf (IfX expr1 expr2 EmptyExpr) env = makeapp $ translateExpr expr2 env ++ translateExpr (IfX expr1 EmptyExpr EmptyExpr) (incrementPos env)
+translateIf (IfX expr1 expr2 expr3) env = makeapp $ translateExpr expr3 env ++ translateExpr (IfX expr1 expr2 EmptyExpr) (incrementPos env)
 
 --------------------Environments--------------------
-createLocalEnv (x:xs) counter = (x,counter) : createLocalEnv xs (counter+1)
+createLocalEnv (x:xs) counter = (x,counter+1) : createLocalEnv xs (counter+1)
 createLocalEnv [] _ = []
 
-createLetEnv ((LocDef name expr):xs) (letEnv, localEnv) counter = createLetEnv xs ([(name,counter+1)] ++ letEnv, localEnv) (counter+1)
+createLetEnv ((LocDef name expr):xs) (letEnv, localEnv) counter = createLetEnv xs ([(name,counter)] ++ letEnv, localEnv) (counter+1)
 createLetEnv [] (letEnv, localEnv) counter =  (letEnv, localEnv)
 
 --------------------Helpers--------------------
@@ -88,11 +90,13 @@ isInEnv a [] = False
 getPos a ((x,y):xs) = if a == x then y else getPos a xs
 getPos a [] = 0
 
-incrementPos ([], a) = ([], increment a)
-incrementPos (a, b) = (increment a, b)
+incrementPos ([], b) = ([], increment b)
+incrementPos (a, b) = (incrementLetEnv a (length a), b)
 
 increment = map(\(x,y) -> (x,y+1))
 
+incrementLetEnv localEnv@((x,y):xs) counter = (x,y - counter) : incrementLetEnv xs (counter+1) 
+incrementLetEnv [] counter = [] 
 
 --------------------Test Cases--------------------
 testProg2 = [FuncDef "a" ["a", "b"] (PlusX (VarX "a") (VarX "b"))]
@@ -100,4 +104,53 @@ testProg8 = [VarDef "a" (IfX (BoolX True) (IntX 1) (IntX 2))] ++ testProg2
 testProg = [VarDef "a" (BoolX True), VarDef "b" (IntX 2)]
 testProg3 = [VarDef "a" (IntX 1) ,VarDef "b" (PlusX (VarX "a") (IntX 2))]
 testProg4 = [FuncDef "func" ["a","b","c"] (AndX (BoolX True) (BoolX False))]
-testProg5 = [VarDef "x" (LetX [LocDef "a" (IntX 8), LocDef "b" (IntX 13)] (PlusX (VarX "a") (VarX "b")))]
+testProg5 = [VarDef "x" ( LetX [LocDef "a" (IntX 8), LocDef "b" (IntX 8)] (PlusX (VarX "a") (VarX "b")))]
+
+
+{--
+
+
+(+ a (+ b c)) 
+
+üb(+ b c)
+üb(+ a)  (Pos + 1)
+makeapp
+
+üb(c)
+üb(+ b) (Pos + 1)
+makeapp
+üb(+ a) 
+makeapp
+
+üb(c)
+üb(b)
+üb(+) (Pos + 1)
+makeapp
+makeapp
+üb(+ a) 
+makeapp
+
+üb(c) -1
+üb(b) 1 
+üb(+)
+makeapp
+makeapp
+üb(a) 2 
+üb(+) (Pos + 1)
+makeapp
+makeapp1
+2 1 -1 
+
+Pre übkonsLet : [a = 1 (2), b = 2 (3), c = 3 (3)]
+
+üb (a) (e1, Pos) 2
+Alloc
+Makeapp 
+üb (b) (e2, (Pos+1)[v1 -> -1]) 1
+Alloc
+Makeapp
+üb (c) (e2, (Pos+2)[v1 -> 0 v2 -> -1]) -1
+Alloc
+Makeapp
+
+--}
