@@ -1,5 +1,40 @@
 module DataStructures where
 
+
+data Instructions 
+  = Pushfun String 
+  | Pushval Expr 
+  | Reset 
+  | Pushparam Int 
+  | Makeapp 
+  | Slide Int 
+  | Return 
+  | Halt 
+  | Call 
+  | Unwind 
+  | Operator OpInstrConstr
+  | Alloc 
+  | SlideLet Int 
+  | Update Int
+  | EmptyInstruction
+  deriving (Show, Eq)  
+
+data OpInstrConstr  
+  = Plus 
+  | Minus 
+  | Times 
+  | DividedBy 
+  | Equals 
+  | LessThan 
+  | And
+  | Or 
+  | Not
+  | Negate 
+  | If
+  deriving (Show, Eq)  
+
+--------------------------------------------------------
+
 newtype InvalidSyntaxError = InvalidSyntaxError String
   deriving (Show)
 
@@ -17,27 +52,7 @@ data Def = FuncDef Name Args Expr | VarDef Name Expr | Deps
   deriving (Show)
 
 data LocDef = LocDef Name Expr | LDeps
-  deriving (Show) 
-
-data Instructions 
-  = Pushfun String 
-  |Pushval Expr 
-  |Reset 
-  |Pushparam Int 
-  |Makeapp 
-  |Slide Int 
-  |Return 
-  |Halt 
-  |Call 
-  |Unwind 
-  |Operator OpInstrConstr
-  |Alloc 
-  |SlideLet Int 
-  |Update Int
-  |EmptyInstruction
-  deriving (Show)  
-
-data OpInstrConstr = Plus | Minus | Times | DividedBy | Equals | LessThan | Or | Not | If deriving (Show)  
+  deriving (Show, Eq) 
 
 data Expr
   = LetX LocDefs Expr
@@ -57,7 +72,7 @@ data Expr
   | DivX Expr Expr
   | AppX Expr Expr
   | EmptyExpr
-  deriving (Show)
+  deriving (Show, Eq)
 
 data RestExpr1 = RE1eps | OR Expr
   deriving (Show)
