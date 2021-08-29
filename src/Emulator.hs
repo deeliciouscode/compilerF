@@ -59,6 +59,9 @@ data Result     = RBool Bool
 runtest1 :: Result
 runtest1 = emulate (code1, stack1, global1, heap1, i1, t1, p1)
 
+runtest2 :: Result
+runtest2 = emulate (code2, stack2, global2, heap2, i2, t2, p2)
+
 -- Emulator
 type Context = (Code, Stack, Global, Heap, I, T, P)
 
@@ -93,6 +96,7 @@ execute all@(code, stack, global, heap, i, t, p) =
 
         -- Pushfun name        -> Debug (show (Pushfun name))
         -- Pushfun name        -> Debug (show . get2 . execPushfun name $ increaseP all)
+        -- Pushfun "if"         -> Debug (show . get2 . execPushfun "if" $ increaseP all)
         Pushfun name        -> execute . execPushfun name $ increaseP all
 
         -- Call                -> Debug (show Call)
@@ -100,11 +104,11 @@ execute all@(code, stack, global, heap, i, t, p) =
         Call                -> execute . execCall $ increaseP all
 
         -- Update int          -> Debug (show (Update int))
-        -- Update int          -> Debug (show . get2 . execUpdate int $ increaseP all)
+        -- Update int          -> Debug (show . get4 . execUpdate int $ increaseP all)
         Update int          -> execute . execUpdate int $ increaseP all
 
         -- Slide int           -> Debug (show (Slide int))
-        -- Slide int           -> Debug (show . get2 . execSlide int $ increaseP all)
+        -- Slide int           -> Debug (show [(get4 . execSlide int $ increaseP all) !! 23])
         Slide int           -> execute . execSlide int $ increaseP all
 
         -- Unwind              -> Debug (show Unwind)
@@ -122,11 +126,22 @@ execute all@(code, stack, global, heap, i, t, p) =
         -- Halt                -> Debug (show Halt)
         Halt                -> execHalt $ increaseP all
 
-        Pushparam int       -> Debug (show (Pushparam int))
-        Makeapp             -> Debug (show Makeapp)
-        Operator op         -> Debug (show (Operator op))
+        -- Makeapp             -> Debug (show Makeapp)
+        -- Makeapp             -> Debug ((show . get2 . execMakeapp $ increaseP all) ++ (show . get4 . execMakeapp $ increaseP all) ++ (show . get6 . execMakeapp $ increaseP all))
+        Makeapp             -> execute . execMakeapp $ increaseP all
+
+        -- Pushparam n         -> Debug (show (Pushparam int))
+        -- Pushparam n         -> Debug (show . get2 . execPushparam n $ increaseP all)
+        Pushparam n         -> execute . execPushparam n $ increaseP all
+        
+        -- Operator op         -> Debug (show (Operator op))
+        Operator op         -> Debug (show . get2 . execOperator op $ increaseP all)
+
         Alloc               -> Debug (show Alloc)
+        
         SlideLet int        -> Debug (show (SlideLet int))
+        
+        -- should never be called
         EmptyInstruction    -> Debug (show EmptyInstruction)
 
 
@@ -157,10 +172,10 @@ indexByName :: String -> Heap -> Int
 indexByName name heap = indexByNameFromZero name heap 0
 
 indexByNameFromZero :: String -> Heap -> Int -> Int
+indexByNameFromZero name [] i = error "Something went wrong in indexByNameFromZero. Name not found." 
 indexByNameFromZero name (DEF defName n a : rest) i
                                             | name == defName   = i
-                                            | otherwise         = indexByNameFromZero name rest (i + 1)
-indexByNameFromZero name _ i = error "Something went wrong in indexByNameFromZero. Only DEF entry expected here."
+indexByNameFromZero name (other:rest) i = indexByNameFromZero name rest (i + 1)
 
 execCall :: Context -> Context
 execCall pass@(code, stack, global, heap, i, t, p) =
@@ -182,9 +197,6 @@ getAdr heap stack t =
     case stack !! t of
         (C i) -> error "Something went wrong in getAdr. Only H i entry expected here."
         (H i) -> heap !! i
-        --   DEF name numArgs codeAddr -> codeAddr
-        --   _                         -> error $ "Something went wrong in getAdr. Only DEF entry expected here." 
-        --     ++ " stack: " ++ show stack ++ " heap: " ++ show heap ++ " t:" ++ show t 
 
 execUpdate :: NumArgs -> Context -> Context
 execUpdate numArgs (code, stack, global, heap, i, t, p) =
@@ -208,7 +220,7 @@ execSlide n (code, stack, global, heap, i, t, p) = (code, stack', global, heap, 
                 t' = t - n
 
 cutFromStack :: Stack -> Int -> Int -> Stack
-cutFromStack stack offset n = let (head, twoLast) = splitAt (length stack - offset) stack in cutN head n ++ twoLast
+cutFromStack stack offset n = let (head, rest) = splitAt (length stack - offset) stack in cutN head n ++ rest
             where
                 cutN list n = take (length list - n) list
 
@@ -221,10 +233,10 @@ execUnwind pass@(code, stack, global, heap, i, t, p) =
                 where
                     stack' = cutFromStack stack 0 1 ++ [C heapAdr] -- May be wrong - need to test 
                     p' = p - 1
-            APP' heapAdr1 heapAdr2 -> (code, stack, global, heap, i, t', p)
+            APP' heapAdr1 heapAdr2 -> (code, stack', global, heap, i, t', p')
                 where
                     t' = t + 1
-                    stack' = stack ++ [C heapAdr1]
+                    stack' = stack ++ [H heapAdr1]
                     p' = p - 1
             DEF name numArgs codeAddr -> pass
             VAL value -> pass
@@ -264,3 +276,51 @@ execHalt (code, stack, global, heap, i, t, p)
           VAL (Int int)     -> RInt int
           _ -> error "Something went wrong in execHalt. Only VAL value is expected here."
 
+
+execMakeapp :: Context -> Context
+execMakeapp (code, stack, global, heap, i, t, p) = (code, stack', global, heap', i, t', p)
+                where
+                    heap'   = pushApp heap stack t
+                    stack'  = cutFromStack stack 0 2 ++ [H (length heap' - 1)]
+                    t'      = t - 1
+
+pushApp :: Heap -> Stack -> T -> Heap
+pushApp heap stack t = 
+    case stack !! t of
+        C i1 -> error "Something went wrong in pushApp. Only H i1 is expected here."
+        H i1 -> case stack !! (t - 1) of
+            C i2 -> error "Something went wrong in pushApp. Only H i2 is expected here."
+            H i2 -> heap ++ [APP' i1 i2]
+
+execPushparam :: Int -> Context -> Context
+execPushparam n (code, stack, global, heap, i, t, p) = (code, stack', global, heap, i, t', p)
+                where
+                    t'      = t + 1
+                    adr     = add2arg stack heap t' n
+                    stack'  = stack ++ [adr]
+
+add2arg :: Stack -> Heap -> T -> Int -> StackType
+add2arg stack heap t n = 
+    case stack !! (t - n - 2) of
+        C i -> error "Something went wrong in pushApp. Only H i is expected here."
+        H i -> case heap !! i of
+          APP' a1 a2    -> H a2
+          _             -> error "Something went wrong in pushApp. Only APP' a1 a2 is expected here."
+
+execOperator :: OpInstrConstr -> Context -> Context
+execOperator Negate (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator Plus (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator Minus (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator Times (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator DividedBy (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator Equals (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator LessThan (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator And (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator Or (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator Not (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execOperator If (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+
+-- continue here (P. 1085 (85) im Skript) 
+-- a = 1 + 2;
+-- b = 3 * 4;
+-- main = if a < 2 then a else a / b;
