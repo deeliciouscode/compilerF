@@ -13,7 +13,7 @@ import DataStructures
 
 mInit = [Reset, Pushfun "main", Call, Halt]
 
-mFalse = [Pushval (Bool False)
+mFalse = [Pushval (BoolX False)
     , Update 0
     , Slide 1
     , Unwind
@@ -21,7 +21,7 @@ mFalse = [Pushval (Bool False)
     , Return
     ]
     
-mTrue = [Pushval (Bool True)
+mTrue = [Pushval (BoolX True)
     , Update 0
     , Slide 1
     , Unwind
@@ -32,7 +32,7 @@ mTrue = [Pushval (Bool True)
 mNegate = [Pushparam 1
     , Unwind
     , Call
-    , Operator Neg
+    , Operator Negate
     , Update 1
     , Slide 2
     , Return
