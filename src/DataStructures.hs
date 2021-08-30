@@ -7,13 +7,21 @@ type Arg = String
 
 type Name = String
 
-type Prog = [Def]
+type Ast = [SubTree]
 
 type Args = [Arg]
 
 type LocDefs = [LocDef]
 
-data Def = FuncDef Name Args Expr | VarDef Name Expr | Deps
+type DefCell = (String, (Int,Int))
+
+type DefList = [DefCell]
+
+type Code = [Instructions]
+
+type Output = (DefList, Code)
+
+data SubTree = FuncDef Name Args Expr | VarDef Name Expr | Deps
   deriving (Show)
 
 data LocDef = LocDef Name Expr | LDeps
@@ -37,7 +45,7 @@ data Instructions
   |EmptyInstruction
   deriving (Show)  
 
-data OpInstrConstr = Plus | Minus | Times | DividedBy | Equals | LessThan | Or | Not | If deriving (Show)  
+data OpInstrConstr = And | Plus | Minus | Times | DividedBy | Equals | LessThan | Or | Not | If | Bool | Neg deriving (Show)  
 
 data Expr
   = LetX LocDefs Expr

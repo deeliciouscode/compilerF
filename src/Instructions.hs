@@ -11,24 +11,24 @@ import Lexer
 import DataStructures
 
 
-mInit = [Reset, Pushfun "main", Call, Halt]
+mHead = [Reset, Pushfun "main", Call, Halt]
 
-mFalse = [Pushval (Bool False)
+mTail = mFalse ++ mTrue ++ mNegate ++ mNot ++ mAnd ++ mOr ++ mPlus ++ mMult ++ mDiv ++ mEq ++ mLess ++ mIf
+
+mFalse = [Pushval (BoolX False)
     , Update 0
     , Slide 1
     , Unwind
     , Call
     , Return
     ]
-    
-mTrue = [Pushval (Bool True)
+mTrue = [Pushval (BoolX True)
     , Update 0
     , Slide 1
     , Unwind
     , Call
     , Return
     ]
--- (* unaerer negate-Operator *)
 mNegate = [Pushparam 1
     , Unwind
     , Call
@@ -121,7 +121,7 @@ mEq = [Pushparam 1
     , Update 2
     , Slide 3
     , Return
-    ]    
+    ] 
 mLess = [Pushparam 1
     , Unwind
     , Call
@@ -133,7 +133,6 @@ mLess = [Pushparam 1
     , Slide 3
     , Return
     ]
--- (* ternaerer if-Operator *)
 mIf = [Pushparam 1
     , Unwind
     , Call

@@ -10,7 +10,7 @@ type Parser token a = [token] -> (Maybe a, [token])
 
 ------------------------------- PROGRAM -------------------------------
 
-parseProgram :: Parser Token Prog
+parseProgram :: Parser Token Ast
 parseProgram tokens =
   case parseDefinition tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseProgram returned Nothing" : tokensRest0)
@@ -23,7 +23,7 @@ parseProgram tokens =
 
 ------------------------------- DEFINITION -------------------------------
 
-parseDefinition :: Parser Token Def
+parseDefinition :: Parser Token SubTree
 parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
   case parseArgs tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseArgs returned Nothing" : tokensRest1)
