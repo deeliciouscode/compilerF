@@ -10,11 +10,14 @@ import Instructions
 import qualified Data.Sequence as Seq
 
 -------------------------- Main Functions --------------------------
+main :: Ast -> (DefList, Code)
+main ast = (generateDefList ast, generateCode ast)
+
 generateDefList :: Ast -> DefList
-generateDefList ast = setIndices 0 $ astToDefList ast ++ initDef
+generateDefList ast = setIndices 4 $ astToDefList ast ++ initDef
 
 generateCode :: Ast -> Code
-generateCode (x:xs) =  translateTree x ++ generateCode xs
+generateCode = concatMap translateTree
 
 -------------------------- Global Environment --------------------------
 initDef :: DefList
@@ -38,32 +41,31 @@ createDefCell :: String -> Int -> Int -> DefCell
 createDefCell name arity length =  (name, (arity, length))
 
 generateDefCell :: SubTree -> DefCell
-generateDefCell (VarDef name expr) = createDefCell name 0 (length $ translateVar name expr (Seq.fromList $ createLocalEnv [] 1)) 
-generateDefCell (FuncDef name args expr) = createDefCell name (length args) (length (translateFunc name args expr (Seq.fromList $ createLocalEnv [] 0)))
+generateDefCell (VarDef name expr) = createDefCell name 0 (length $ translateVar name expr (createLocalEnv [] 1)) 
+generateDefCell (FuncDef name args expr) = createDefCell name (length args) (length (translateFunc name args expr (createLocalEnv [] 0)))
 
 setIndices :: Int -> DefList -> DefList
-setIndices n ((a,(x,y)):[]) = [(a,(x,n))]
+setIndices n [(a,(x,y))] = [(a,(x,n))]
 setIndices n ((a,(x,y)):xs) = (a,(x,n)) : setIndices (y+n) xs
 
 astToDefList :: Ast -> DefList
 astToDefList = map generateDefCell
 
 -------------------------- Translation --------------------------
-
 translateTree :: SubTree -> Code
 translateTree subtree  =
     case subtree of
-        VarDef name expr -> translateVar name expr $ Seq.fromList $ createLocalEnv [] 0
-        FuncDef name args expr -> translateFunc name args expr $ Seq.fromList $ createLocalEnv [] 0
+        VarDef name expr -> translateVar name expr $ createLocalEnv [] 0
+        FuncDef name args expr -> translateFunc name args expr $ createLocalEnv [] 0
 
-translateVar :: String -> Expr -> Seq.Seq (String, Int) -> Code
 translateVar name expr locEnv = translateExpr expr locEnv ++ [Update 0, Slide 1, Unwind, Call, Return]
 
+-- translateVar :: String -> Args -> Expr -> Seq.Seq (String, Int) -> Code
 translateFunc name args expr localEnv = translateExpr expr localEnv ++ [Update (length args), Slide (length args + 1), Unwind, Call, Return]
 
 translateExpr expr locEnv = 
     case expr of
-        VarX a -> if isInEnv a locEnv then [Pushparam (getPos a locEnv)] else [Pushfun a]
+        VarX a -> if isInEnv a locEnv then [Pushparam (getPos a locEnv)] else [Pushfun a] 
         IntX a -> [Pushval (IntX a)]
         BoolX a -> [Pushfun (show a)]
         e@(PlusX expr1 expr2) -> translatePlus e locEnv
@@ -77,27 +79,18 @@ translateExpr expr locEnv =
         (NotX expr) -> translateExpr expr locEnv ++ push "Not"
         (NegX expr) -> translateExpr expr locEnv ++ push "Negate"
         e@(IfX expr1 expr2 expr3) -> translateIf e locEnv
-        (LetX locdefs expr) -> translateLocalDefs locdefs locEnv (-1) -- ++ translateLetExpr expr locdefs locEnv
+        (LetX locDefs expr) -> translateLocalDefs locDefs locEnv (-1) ++ translateLetExpr expr locDefs locEnv (-1)
 
 
 translateLocalDefs [] _ _ = [] 
-translateLocalDefs locDefs@((LocDef name expr):xs) localEnv counter = translateExpr expr (updateLocalVarValue (reverse locDefs) localEnv counter) ++ [Alloc, Makeapp] ++ translateLocalDefs xs (updateLocalVarValue (reverse locDefs) localEnv counter) counter
+translateLocalDefs locdefs@((LocDef name expr):xs) localEnv i@counter = translateExpr expr (updateLocalVarValue (reverse locdefs) localEnv i) ++ [Alloc, Makeapp] ++ translateLocalDefs xs (updateLocalVarValue (reverse locdefs) localEnv i) i
 
-updateLocalVarValue localDef localEnv counter = if length localDef > 1 then addLetEnv localDef localEnv counter else localEnv
+updateLocalVarValue localDef localEnv i@counter = if length localDef > 1 then addLetEnv localDef localEnv i else localEnv
 
+translateLetExpr expr locDefs localEnv i@counter = translateExpr expr ((addLetEnv (reverse (locDefs)) localEnv i)) ++ [SlideLet (length locDefs)]
 
-addLetEnv :: [LocDef] -> Seq.Seq (String, Int) -> Int -> Seq.Seq (String, Int)
-addLetEnv [x] localEnv counter = localEnv
-addLetEnv ((LocDef name expr):xs) localEnv counter =  increment $ localEnv Seq.>< addLetEnv xs (localEnv Seq.>< Seq.singleton(name, counter)) (counter+1)
-
-
--- translateLet EmptyExpr localEnv instructions = instructions ++ [SlideLet (length localEnv)]
-
--- translateLet [] expr localEnv instructions = instructions ++ translateExpr expr localEnv
-
--- translateLetExpr [] localEnv instructions globalExpr = translateLet [] EmptyExpr localEnv (instructions ++ translateExpr globalExpr localEnv) 
--- translateLetExpr ((LocDef name expr):xs) localEnv instructions globalExpr =  translateLetExpr xs (incrementPos localEnv) (translateExpr expr localEnv ++ [Alloc, Makeapp] ++ instructions) globalExpr
-
+addLetEnv ((LocDef name expr):xs) localEnv i@counter =  addLetEnv xs (localEnv ++ [(name, i)]) (i+1)
+addLetEnv [] localEnv counter = localEnv
 
 translatePlus (PlusX expr EmptyExpr) env = translateExpr expr env ++ push "+"
 translatePlus (PlusX expr1 expr2) env = makeapp $ translateExpr expr2 env ++ translateExpr (PlusX expr1 EmptyExpr) (increment env)
@@ -128,25 +121,30 @@ translateIf (IfX expr1 expr2 EmptyExpr) env = makeapp $ translateExpr expr2 env 
 translateIf (IfX expr1 expr2 expr3) env = makeapp $ translateExpr expr3 env ++ translateExpr (IfX expr1 expr2 EmptyExpr) (increment env)
 
 --------------------Local Environments--------------------
-createLocalEnv (x:xs) counter = (x,counter+1) : createLocalEnv xs (counter+1)
+-- createLocalEnv :: LocalEnvironment -> Int -> LocalEnvironment
+createLocalEnv (x:xs) i@counter = (x,i+1) : createLocalEnv xs (i+1)
 createLocalEnv [] _ = []
 
 --------------------Helpers--------------------
 makeapp a = a ++ [Makeapp]
 push op = [Pushfun op, Makeapp]
 
-isInEnv a (Seq.viewl -> (x,y) Seq.:< xs) = a == x || isInEnv a xs 
-isInEnv a (Seq.viewl -> Seq.EmptyL)  = False
+isInEnv a ((x,y):xs) = a == x || isInEnv a xs 
+isInEnv a [] = False
 
-getPos a (Seq.viewl -> (x,y) Seq.:< xs) = if a == x then y else getPos a xs
-getPos a (Seq.viewl -> Seq.EmptyL) = 0
+getPos a ((x,y):xs) = if a == x then y else getPos a xs
+getPos a [] = 4
  
-increment = Seq.mapWithIndex (\int (x,y) -> (x,y+1))
+-- increment env = map (\(x,y) -> (x,y+1)) env 
+increment :: LocalEnvironment -> LocalEnvironment 
+increment = map(\(x,y) -> (x,y+1))
 
 --------------------Test Cases--------------------
 testProg2 = [FuncDef "f" ["a", "b"] (PlusX (VarX "a") (VarX "b"))]
-testProg8 = [VarDef "a" (IfX (BoolX True) (IntX 1) (IntX 2))] ++ testProg2
+testProg8 = [VarDef "a" (IfX (BoolX True) (IntX 1) (IntX 2))] 
 testProg = [VarDef "a" (BoolX True), VarDef "b" (IntX 2)]
 testProg3 = [VarDef "a" (IntX 1) ,VarDef "b" (PlusX (VarX "a") (IntX 2))]
 testProg4 = [FuncDef "func" ["a","b","c"] (AndX (BoolX True) (BoolX False))]
-testProg5 = [VarDef "x" ( LetX [LocDef "a" (IntX 8), LocDef "b" (IntX 8)] (PlusX (VarX "a") (VarX "b")))]
+testProg5 = [VarDef "f" ( LetX [LocDef "a" (IntX 1)] (VarX "a") )]
+testProg6 = [VarDef "f" (LetX [LocDef "a" (IntX 1), LocDef "b" (IntX 2)] (PlusX (VarX "a") (VarX "b"))) ]
+testProg7 = [VarDef "f" (LetX [LocDef "a" (IntX 1), LocDef "b" (IntX 2), LocDef "c" (IntX 3)] (PlusX (VarX "a") (PlusX (VarX "b") (VarX "c")))) ]

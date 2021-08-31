@@ -21,6 +21,8 @@ type Code = [Instructions]
 
 type Output = (DefList, Code)
 
+type LocalEnvironment = [(String, Int)]
+
 data SubTree = FuncDef Name Args Expr | VarDef Name Expr | Deps
   deriving (Show)
 
