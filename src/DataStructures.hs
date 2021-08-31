@@ -15,11 +15,11 @@ type LocDefs = [LocDef]
 
 type DefCell = (String, (Int,Int))
 
-type DefList = [DefCell]
+type GlobalEnvironment = [DefCell]
 
 type Code = [Instructions]
 
-type Output = (DefList, Code)
+type Output = (GlobalEnvironment, Code)
 
 type LocalEnvironment = [(String, Int)]
 
