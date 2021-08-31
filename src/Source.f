@@ -5,6 +5,6 @@
 -- g t f = t & not f;
 -- main = f a b c;
 
-var1 = 1;
+main = 1;
 
 -- var a = True;

@@ -3,6 +3,7 @@ import GHC.IO.Handle.Types (Handle(FileHandle))
 import Interpreter
 import Parser
 import Network.URI (parseAbsoluteURI)
+import CodeGeneration
 
 main = do 
     filename <- getLine
@@ -13,5 +14,13 @@ main = do
     putStrLn contents
     putStrLn ""
     putStrLn "-------- Abstract Syntax Tree --------"
-    print (parseWith parseProgram contents)
+    let ast = parseWith parseProgram contents
+    print ast
+    let (defList, code) = gen ast
+    putStrLn "-------- Def List --------"
+    print defList
+    putStrLn "-------- Code --------"
+    print code
+    putStrLn "-------- Result --------"
+    
     hClose fileHandle

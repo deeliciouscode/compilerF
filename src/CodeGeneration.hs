@@ -10,8 +10,8 @@ import Instructions
 import qualified Data.Sequence as Seq
 
 -------------------------- Main Functions --------------------------
-main :: Ast -> (DefList, Code)
-main ast = (generateDefList ast, generateCode ast)
+gen :: Ast -> (DefList, Code)
+gen ast = (generateDefList ast, generateCode ast)
 
 generateDefList :: Ast -> DefList
 generateDefList ast = setIndices 4 $ astToDefList ast ++ initDef

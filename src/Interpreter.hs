@@ -6,6 +6,8 @@ import Parser
 import Data.Text
 import Data.Maybe
 
+import CodeGeneration
+
 
 -- F Spezifikationen (Skript Seite 61):
 -- Lokale Definitionen sind in F möglich, jedoch eingeschränkt auf Definitionen von Ausdrücken ohne Parameter (Wertedefinitionen).
