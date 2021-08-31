@@ -32,7 +32,7 @@ mTrue = [Pushval (BoolX True)
 mNegate = [Pushparam 1
     , Unwind
     , Call
-    , Operator Neg
+    , Operator Negate
     , Update 1
     , Slide 2
     , Return

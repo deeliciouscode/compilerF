@@ -1,5 +1,78 @@
 module DataStructures where
 
+-- Aliases
+type NumArgs    = Int
+type CodeAdr    = Int
+type HeapAdr    = Int
+data Value      = Bool Bool | Int Int
+            deriving (Show, Eq)
+
+-- Stack & Heap Structures
+data StackType  = C Int
+                | H Int
+            deriving (Show, Eq)
+
+data HeapType   = DEF String NumArgs CodeAdr
+                | IND HeapAdr
+                | APP' HeapAdr HeapAdr
+                | VAL Value
+            deriving (Show, Eq)
+
+-- Storages 
+-- type Code       = [Instructions] [Output of Code Generation]
+type Stack      = [StackType]
+type Global     = [(String, (NumArgs, CodeAdr))] -- Maybe have function that translates Operators to strings
+type Heap       = [HeapType]
+
+-- Registers
+type I          = Instructions
+type T          = Int
+type P          = Int
+
+-- Results
+data Result     = RBool Bool
+                | RInt Int
+                | Placeholder
+                | Debug String
+                | RuntimeError String
+            deriving (Show)
+
+--------------------------------------------------------
+
+data Instructions 
+  = Pushfun String 
+  | Pushval Expr 
+  | Reset 
+  | Pushparam Int 
+  | Makeapp 
+  | Slide Int 
+  | Return 
+  | Halt 
+  | Call 
+  | Unwind 
+  | Operator OpInstrConstr
+  | Alloc 
+  | SlideLet Int 
+  | Update Int
+  | EmptyInstruction
+  deriving (Show, Eq)  
+
+data OpInstrConstr  
+  = Plus 
+  | Minus 
+  | Times 
+  | DividedBy 
+  | Equals 
+  | LessThan 
+  | And
+  | Or 
+  | Not
+  | Negate 
+  | If
+  deriving (Show, Eq)  
+
+--------------------------------------------------------
+
 newtype InvalidSyntaxError = InvalidSyntaxError String
   deriving (Show)
 
@@ -27,27 +100,7 @@ data SubTree = FuncDef Name Args Expr | VarDef Name Expr | Deps
   deriving (Show)
 
 data LocDef = LocDef Name Expr | LDeps
-  deriving (Show) 
-
-data Instructions 
-  = Pushfun String 
-  |Pushval Expr 
-  |Reset 
-  |Pushparam Int 
-  |Makeapp 
-  |Slide Int 
-  |Return 
-  |Halt 
-  |Call 
-  |Unwind 
-  |Operator OpInstrConstr
-  |Alloc 
-  |SlideLet Int 
-  |Update Int
-  |EmptyInstruction
-  deriving (Show)  
-
-data OpInstrConstr = And | Plus | Minus | Times | DividedBy | Equals | LessThan | Or | Not | If | Bool | Neg deriving (Show)  
+  deriving (Show, Eq) 
 
 data Expr
   = LetX LocDefs Expr
@@ -67,7 +120,7 @@ data Expr
   | DivX Expr Expr
   | AppX Expr Expr
   | EmptyExpr
-  deriving (Show)
+  deriving (Show, Eq)
 
 data RestExpr1 = RE1eps | OR Expr
   deriving (Show)

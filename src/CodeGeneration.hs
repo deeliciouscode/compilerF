@@ -22,8 +22,8 @@ generateCode = concatMap translateTree
 -------------------------- Global Environment --------------------------
 initDef :: DefList
 initDef = 
-    [ ("false",(1,6))
-    , ("true",(1,6))
+    [ ("false",(0,6))
+    , ("true",(0,6))
     , ("not",(1,7))
     , ("negate",(1,7))
     , ("|",(2,10))

@@ -4,6 +4,8 @@ import Interpreter
 import Parser
 import Network.URI (parseAbsoluteURI)
 import CodeGeneration
+import DataStructures
+import Emulator
 
 main = do 
     filename <- getLine
@@ -17,10 +19,14 @@ main = do
     let ast = parseWith parseProgram contents
     print ast
     let (defList, code) = gen ast
+    putStrLn ""
     putStrLn "-------- Def List --------"
     print defList
+    putStrLn ""
     putStrLn "-------- Code --------"
     print code
+    putStrLn ""
     putStrLn "-------- Result --------"
-    
+    let result = emulate (code, [], defList, [], EmptyInstruction, 0, 0)
+    print result
     hClose fileHandle
