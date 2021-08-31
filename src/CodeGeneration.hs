@@ -1,5 +1,4 @@
 -- {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
-
 module CodeGeneration where
 
 import Parser
@@ -8,86 +7,50 @@ import Lexer
 import DataStructures
 import Instructions
 
-generateDEF :: DefList
-generateDEF = 
-    [("if", (3,4))
-    , ("<",(2,15))
-    , ("==",(2,25))
-    , ("/",(2,35))
-    , ("*",(2,45))
-    , ("-",(2,55))
-    , ("+",(2,65))
-    , ("|",(2,75))
-    , ("&",(2,85))
-    , ("not",(1,85))
-    ]
-
-
-
----------------- Maybe later-------------------------------
--- genOutput [] output = output
--- genOutput (x:xs) (a,b) = do 
---     instructions <- translateTree x []
---     defList <- genDefList x (length instructions)
---     let outPut = genOutput xs (a++[instructions], defList) 
---     return outPut
-
--- genDefList :: SubTree -> Int -> DefList -> DefList
--- genDefList (FuncDef name args expr) offset defList = insertDef name (length args) offset defList
--- genDefList (VarDef name expr) offset defList = insertDef name 0 offset defList
----------------- end maybe-------------------------------
-{--
-
-insertDef :: String -> Int -> Int -> DefList -> DefList
-insertDef name arity length [(op,(n,i))] =  [(name, (arity, 4))] ++ addn length [(op,(n, i))]
-
--- generateDefCellList :: Ast -> DefList -> DefList
--- generateDefCellList [] deflist = deflist
--- generateDefCellList (x:xs) deflist = translateTree' x deflist : generateDefCellList xs deflist
-
-
-generateDefCellList :: Ast -> DefList -> DefList
-generateDefCellList [] = []
-generateDefCellList (x:xs) (prevName, (arity, l):y) = translateTree' x l : generateDefCellList xs 
-
---}
-
-generateDefCellList :: Ast -> DefList
-generateDefCellList [] = []
--- generateDefCellList (x:xs) = insertDefCell generateDEF
-
-generateDefCell :: String -> Int -> Int -> DefCell
-generateDefCell name arity length =  (name, (arity, length))
-
-
-----------------------------
+-------------------------- Main Functions --------------------------
 -- TODO: add preexisting def cells and adjust indexes accordingly
 
+generateDefList :: Ast -> DefList
+generateDefList ast = setIndices 0 $ (astToDefList ast) ++ initDef
 
--- generate the deflist from the list abstrac syntax tree 
-entry :: Ast -> DefList
-entry ast = incInd 0 (map treeToDef ast)
+generateCode :: Ast -> Code
+generateCode (x:xs) =  (translateTree x []) ++ generateCode xs
 
--- treeToDef :: SubTree -> DefList
--- Generate one def cell from one subtree
-treeToDef (VarDef name expr) = generateDefCell name 0 (length (translateVar name expr []))
-treeToDef (FuncDef name args expr) = generateDefCell name (length args) (length (translateFunc name args expr [] ([], createLocalEnv args 1)))
+-------------------------- Global Environment --------------------------
+initDef :: DefList
+initDef = 
+    [ ("false",(1,6))
+    , ("true",(1,6))
+    , ("not",(1,7))
+    , ("negate",(1,7))
+    , ("|",(2,10))
+    , ("&",(2,10))
+    , ("+",(2,10))
+    , ("-",(2,10))
+    , ("*",(2,10))
+    , ("/",(2,10))
+    , ("==",(2,10))
+    , ("<",(2,10))
+    , ("if", (3,11))
+    ]
 
--- incInd :: Int -> DefList -> 
--- After deflist has been constructed set the indexes to their respective value
-incInd n ((a,(x,y)):[]) = [(a,(x,n))]
-incInd n ((a,(x,y)):xs) = (a,(x,n)) : incInd (y+n) xs
+createDefCell :: String -> Int -> Int -> DefCell
+createDefCell name arity length =  (name, (arity, length))
 
-insertDef :: String -> Int -> Int -> DefList -> DefList
-insertDef name arity length [(op,(n,i))] =  [(name, (arity, 4))] ++ addn length [(op,(n, i))]
----------------------------
+generateDefCell :: SubTree -> DefCell
+generateDefCell (VarDef name expr) = createDefCell name 0 (length (translateVar name expr []))
+generateDefCell (FuncDef name args expr) = createDefCell name (length args) (length (translateFunc name args expr [] ([], createLocalEnv args 1)))
 
-addn n = map (\(x,(y, z))->(x,(y, z+n)))
+setIndices :: Int -> DefList -> DefList
+setIndices n ((a,(x,y)):[]) = [(a,(x,n))]
+setIndices n ((a,(x,y)):xs) = (a,(x,n)) : setIndices (y+n) xs
 
--------------------------- Translation--------------------------
--- translateProg xs def= foldr (\ x -> (++) (translateTree x def)) xs
-translateProg (x:xs) def =  (translateTree x def) : translateProg xs def
+astToDefList :: Ast -> DefList
+astToDefList ast = map generateDefCell ast
 
+-------------------------- Translation --------------------------
+
+translateTree :: SubTree -> Code -> Code
 translateTree subtree list  =
     case subtree of
         VarDef name expr -> translateVar name expr list
@@ -115,6 +78,7 @@ translateExpr expr (letEnv, locEnv) =
         (NegX expr) -> translateExpr expr (letEnv, locEnv) ++ push "Negate"
         e@(IfX expr1 expr2 expr3) -> translateIf e (letEnv, locEnv)
         (LetX locdefs expr) -> translateLet locdefs expr (createLetEnv locdefs ([],locEnv) 1) []
+
 
 translateLet [] EmptyExpr env@(letEnv, localEnv) instructions = instructions ++ [SlideLet (length letEnv)]
 translateLet [] expr env@(letEnv, localEnv) instructions = instructions ++ translateExpr expr env
@@ -151,7 +115,7 @@ translateIf (IfX expr1 EmptyExpr EmptyExpr) env = translateExpr expr1 env ++ pus
 translateIf (IfX expr1 expr2 EmptyExpr) env = makeapp $ translateExpr expr2 env ++ translateExpr (IfX expr1 EmptyExpr EmptyExpr) (incrementPos env)
 translateIf (IfX expr1 expr2 expr3) env = makeapp $ translateExpr expr3 env ++ translateExpr (IfX expr1 expr2 EmptyExpr) (incrementPos env)
 
---------------------Environments--------------------
+--------------------Local Environments--------------------
 createLocalEnv (x:xs) counter = (x,counter+1) : createLocalEnv xs (counter+1)
 createLocalEnv [] _ = []
 
@@ -162,8 +126,8 @@ createLetEnv [] (letEnv, localEnv) counter =  (letEnv, localEnv)
 makeapp a = a ++ [Makeapp]
 push op = [Pushfun op, Makeapp]
 
-isInEnv a ((x,y):xs) = (a == x) || isInEnv a xs
 isInEnv a [] = False
+isInEnv a ((x,y):xs) = (a == x) || isInEnv a xs
 
 getPos a ((x,y):xs) = if a == x then y else getPos a xs
 getPos a [] = 0
@@ -173,8 +137,8 @@ incrementPos (a, b) = (incrementLetEnv a (length a), b)
 
 increment = map(\(x,y) -> (x,y+1))
 
-incrementLetEnv localEnv@((x,y):xs) counter = (x,y - counter) : incrementLetEnv xs (counter+1) 
 incrementLetEnv [] counter = [] 
+incrementLetEnv localEnv@((x,y):xs) counter = (x,y - counter) : incrementLetEnv xs (counter+1) 
 
 --------------------Test Cases--------------------
 testProg2 = [FuncDef "a" ["a", "b"] (PlusX (VarX "a") (VarX "b"))]

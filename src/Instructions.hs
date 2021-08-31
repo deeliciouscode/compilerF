@@ -13,7 +13,7 @@ import DataStructures
 
 mHead = [Reset, Pushfun "main", Call, Halt]
 
-mTail = mFalse ++ mTrue ++ mNegate ++ mNot ++ mAnd ++ mOr ++ mPlus ++ mMult ++ mDiv ++ mEq ++ mLess ++ mIf
+mTail = mFalse ++ mTrue ++ mNot ++ mNegate ++  mOr ++ mAnd ++ mPlus ++ mMinus ++ mMult ++ mDiv ++ mEq ++ mLess ++ mIf
 
 mFalse = [Pushval (BoolX False)
     , Update 0
@@ -45,17 +45,6 @@ mNot = [Pushparam 1
     , Slide 2
     , Return
     ]
-mAnd = [Pushparam 1
-    , Unwind
-    , Call
-    , Pushparam 3
-    , Unwind
-    , Call
-    , Operator And
-    , Update 2
-    , Slide 3
-    , Return
-    ]
 mOr = [Pushparam 1
     , Unwind
     , Call
@@ -67,6 +56,17 @@ mOr = [Pushparam 1
     , Slide 3   
     , Return
     ]    
+mAnd = [Pushparam 1
+    , Unwind
+    , Call
+    , Pushparam 3
+    , Unwind
+    , Call
+    , Operator And
+    , Update 2
+    , Slide 3
+    , Return
+    ]
 mPlus = [Pushparam 1
     , Unwind
     , Call
