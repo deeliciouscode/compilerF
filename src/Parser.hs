@@ -10,7 +10,7 @@ type Parser token a = [token] -> (Maybe a, [token])
 
 ------------------------------- PROGRAM -------------------------------
 
-parseProgram :: Parser Token Prog
+parseProgram :: Parser Token Ast
 parseProgram tokens =
   case parseDefinition tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseProgram returned Nothing" : tokensRest0)
@@ -23,7 +23,7 @@ parseProgram tokens =
 
 ------------------------------- DEFINITION -------------------------------
 
-parseDefinition :: Parser Token Def
+parseDefinition :: Parser Token SubTree
 parseDefinition (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
   case parseArgs tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseArgs returned Nothing" : tokensRest1)
@@ -91,7 +91,7 @@ parseExpression (T_LET : tokensRest0) =
       case parseExpression tokensRest1 of
         (Nothing, tokensRest2) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, LET case)" : tokensRest2)
         (Just expressionResult, tokensRest2) ->
-          (Just $ Let localDefs expressionResult, tokensRest2)
+          (Just $ LetX localDefs expressionResult, tokensRest2)
 parseExpression (T_IF : tokensRest0) =
   case parseExpression tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, IF case)" : tokensRest1) -- check if we need to check for then and else
@@ -102,7 +102,7 @@ parseExpression (T_IF : tokensRest0) =
           case parseExpression tokensRest2 of
             (Nothing, tokensRest3) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, ELSE case)" : tokensRest3)
             (Just thirdExpressionResult, tokensRest3) ->
-              (Just $ If firstExpressionResult secondExpressionResult thirdExpressionResult, tokensRest3)
+              (Just $ IfX firstExpressionResult secondExpressionResult thirdExpressionResult, tokensRest3)
 parseExpression tokens =
   case parseExpr1 tokens of
     (Nothing, tokensRest0) -> (Nothing, Error "parseExpr1 returned Nothing (in parseExpression, Atom case)" : tokensRest0)
@@ -117,7 +117,7 @@ parseExpr1 tokens =
     (Just expr2, tokensRest0) ->
       case parseRest1 tokensRest0 of
         (Just RE1eps, tokensRest1) -> (Just expr2, tokensRest1)
-        (Just (OR expr1), tokensRest1) -> (Just (Or expr2 expr1), tokensRest1)
+        (Just (OR expr1), tokensRest1) -> (Just (OrX expr2 expr1), tokensRest1)
         (Nothing, tokensRest1) -> (Nothing, Error "parseRest1 returned Nothing" : tokensRest1)
 
 parseRest1 :: Parser Token RestExpr1
@@ -135,7 +135,7 @@ parseExpr2 tokens =
     (Just expr3, tokensRest0) -> 
       case parseRest2 tokensRest0 of 
         (Just RE2eps, tokensRest1) -> (Just expr3, tokensRest1)
-        (Just (AND expr2), tokensRest1) -> (Just (And expr3 expr2), tokensRest1)
+        (Just (AND expr2), tokensRest1) -> (Just (AndX expr3 expr2), tokensRest1)
         (Nothing, tokensRest1) -> (Nothing, Error "parseRest2 returned Nothing" : tokensRest1)
 
 
@@ -151,7 +151,7 @@ parseExprNot :: Parser Token  Expr
 parseExprNot all@(TUniOp UO_NOT : tokensRest0) =
   case parseExpr3 tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseExpr3 returned Nothing (Not Case)" : tokensRest1)
-    (Just expr3, tokensRest1) -> (Just (Not expr3), tokensRest1)
+    (Just expr3, tokensRest1) -> (Just (NotX expr3), tokensRest1)
 parseExprNot tokens = 
   case parseExpr3 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr3 returned Nothing (Pos Case)" : rest)
@@ -166,8 +166,8 @@ parseExpr3 tokens =
     (Just expr4, tokensRest0) ->
       case parseRest3 tokensRest0 of 
         (Just RE3eps, tokensRest1) -> (Just expr4, tokensRest1)
-        (Just (CompEq expr3), tokensRest1) -> (Just (Equals expr4 expr3), tokensRest1)
-        (Just (CompSmaller expr3), tokensRest1) -> (Just (Smaller expr4 expr3), tokensRest1)
+        (Just (CompEq expr3), tokensRest1) -> (Just (EqualsX expr4 expr3), tokensRest1)
+        (Just (CompSmaller expr3), tokensRest1) -> (Just (SmallerX expr4 expr3), tokensRest1)
         (Nothing, tokensRest1) -> (Nothing, Error "parseRest3 returned Nothing" : tokensRest1)
 
 parseRest3 :: Parser Token RestExpr3
@@ -188,8 +188,8 @@ parseExpr4 tokens =
     (Just expr5, tokensRest0) -> 
       case parseRest4 tokensRest0 of 
         (Just RE4eps, tokensRest1) -> (Just expr5, tokensRest1)
-        (Just (PLUS expr4), tokensRest1) -> (Just (Plus expr5 expr4), tokensRest1)
-        (Just (MINUS expr4), tokensRest1) -> (Just (Minus expr5 expr4), tokensRest1)
+        (Just (PLUS expr4), tokensRest1) -> (Just (PlusX expr5 expr4), tokensRest1)
+        (Just (MINUS expr4), tokensRest1) -> (Just (MinusX expr5 expr4), tokensRest1)
         (Nothing, tokensRest1) -> (Nothing, Error "parseRest4 returned Nothing" : tokensRest1)
 
 parseRest4 :: Parser Token RestExpr4
@@ -207,7 +207,7 @@ parseExpr5 :: Parser Token  Expr
 parseExpr5 all@(TUniOp UO_MINUS : tokensRest0) =
   case parseExpr6 tokensRest0 of
     (Nothing, tokensRest1) -> (Nothing, Error "parseExpr6 returned Nothing (Neg Case)" : tokensRest1)
-    (Just expr6, tokensRest1) -> (Just (Neg expr6), tokensRest1)
+    (Just expr6, tokensRest1) -> (Just (NegX expr6), tokensRest1)
 parseExpr5 tokens = 
   case parseExpr6 tokens of
     (Nothing, rest) -> (Nothing, Error "parseExpr6 returned Nothing (Pos Case)" : rest)
@@ -222,8 +222,8 @@ parseExpr6 tokens =
     (Just expr7, tokensRest0) -> 
       case parseRest6 tokensRest0 of 
         (Just RE6eps, tokensRest1) -> (Just expr7, tokensRest1)
-        (Just (MULT expr6), tokensRest1) -> (Just (Mult expr7 expr6), tokensRest1)
-        (Just (DIV expr6), tokensRest1) -> (Just (Div expr7 expr6), tokensRest1)
+        (Just (MULT expr6), tokensRest1) -> (Just (MultX expr7 expr6), tokensRest1)
+        (Just (DIV expr6), tokensRest1) -> (Just (DivX expr7 expr6), tokensRest1)
         (Nothing, tokensRest1) -> (Nothing, Error "parseRest6 returned Nothing" : tokensRest1)
 
 parseRest6 :: Parser Token RestExpr6
@@ -244,7 +244,7 @@ parseExpr7 tokens =
     (Just atomExpr, tokensRest0) -> 
       case parseRest7 tokensRest0 of 
         (Just RE7eps, tokensRest1) -> (Just atomExpr, tokensRest1)
-        (Just (APP expr7), tokensRest1) -> (Just (App atomExpr expr7), tokensRest1)
+        (Just (APP expr7), tokensRest1) -> (Just (AppX atomExpr expr7), tokensRest1)
         (Nothing, tokensRest1) -> (Nothing, Error "parseRest7 returned Nothing" : tokensRest1)
 
 parseRest7 :: Parser Token RestExpr7
@@ -271,9 +271,9 @@ isOperator _            = False
 ----------------------------------------------------------------------------------------
 
 parseAtomicExpr :: Parser Token Expr
-parseAtomicExpr (TAtomExpr (T_VAR (Name name)) : tokensRest) = (Just (Var name), tokensRest)
-parseAtomicExpr (TAtomExpr (T_INT int) : tokensRest) = (Just (Int int), tokensRest)
-parseAtomicExpr (TAtomExpr (T_BOOL bool) : tokensRest) = (Just (Bool bool), tokensRest)
+parseAtomicExpr (TAtomExpr (T_VAR (Name name)) : tokensRest) = (Just (VarX name), tokensRest)
+parseAtomicExpr (TAtomExpr (T_INT int) : tokensRest) = (Just (IntX int), tokensRest)
+parseAtomicExpr (TAtomExpr (T_BOOL bool) : tokensRest) = (Just (BoolX bool), tokensRest)
 parseAtomicExpr (TLPAREN : tokensRest0) = case parseExpression tokensRest0 of 
   (Nothing, tokensRest1) -> (Nothing, Error "parseExpression returned Nothing (in parseExpression, ELSE case)" : tokensRest1)
   (expr, TRPAREN : tokensRest1) -> (expr, tokensRest1)
