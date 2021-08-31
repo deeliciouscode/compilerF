@@ -28,6 +28,14 @@ runtest2 = emulate (code2, stack2, global2, heap2, i2, t2, p2)
 runtest3 :: Result
 runtest3 = emulate (code3, stack2, global2, heap2, i2, t2, p2)
 
+-- data HeapType   = DEF String NumArgs CodeAdr
+--                 | IND HeapAdr
+--                 | APP' HeapAdr HeapAdr
+--                 | VAL Value
+
+testHeap :: [HeapType]
+testHeap = [DEF "a" 1 2, IND 1, APP' 1 2, VAL (Int 1)]
+
 -- Emulator
 type Context = (Code, Stack, Global, Heap, I, T, P)
 
@@ -61,7 +69,7 @@ execute all@(code, stack, global, heap, i, t, p) =
 
         -- Pushfun name        -> Debug (show (Pushfun name))
         -- Pushfun name        -> Debug (show . get2 . execPushfun name $ increaseP all)
-        -- Pushfun "if"         -> Debug (show . get2 . execPushfun "if" $ increaseP all)
+        -- Pushfun "c"         -> Debug (show . get2 . execPushfun "a" $ increaseP all)
         Pushfun name        -> execute . execPushfun name $ increaseP all
 
         -- Call                -> Debug (show Call)
@@ -144,7 +152,7 @@ indexByName :: String -> Heap -> Int
 indexByName name heap = indexByNameFromZero name heap 0
 
 indexByNameFromZero :: String -> Heap -> Int -> Int
-indexByNameFromZero name [] i = error "Something went wrong in indexByNameFromZero. Name not found." 
+indexByNameFromZero name [] i = error $ "Something went wrong in indexByNameFromZero. Name not found. " ++ show name  
 indexByNameFromZero name (DEF defName n a : rest) i
                                             | name == defName   = i
 indexByNameFromZero name (other:rest) i = indexByNameFromZero name rest (i + 1)
@@ -349,7 +357,7 @@ execOperator Equals (code, stack, global, heap, i, t, p) =
                 where
                     t'      = t - 1
                     stack'  = take (length stack - 2) stack ++ [H (length heap)]
-                    heap'   = let (VAL (Bool x1)) = heap !! n in let (VAL (Bool x2)) = heap !! m in heap ++ [VAL $ Bool (x1 == x2)]
+                    heap'   = let (VAL val1) = heap !! n in let (VAL val2) = heap !! m in heap ++ [VAL $ Bool (val1 == val2)]
 execOperator And (code, stack, global, heap, i, t, p) = 
     case stack !! (t-1) of
         C n -> error "Something went wrong in execOperator And. Only H n is expected here."
