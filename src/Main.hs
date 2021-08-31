@@ -18,7 +18,7 @@ main = do
     putStrLn "-------- Abstract Syntax Tree --------"
     let ast = parseWith parseProgram contents
     print ast
-    let (defList, code) = gen ast
+    let (defList, code) = generate ast
     putStrLn ""
     putStrLn "-------- Def List --------"
     print defList
