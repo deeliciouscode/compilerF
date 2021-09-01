@@ -1,19 +1,44 @@
 module Instructions where
 import Data.Maybe
 import Data.Map
-
 import Parser
--- import Relude
 import Data.Text
-
 import Helpers
 import Lexer
 import DataStructures
 
-
 mHead = [Reset, Pushfun "main", Call, Halt]
 
 mTail = mFalse ++ mTrue ++ mNot ++ mNegate ++  mOr ++ mAnd ++ mPlus ++ mMinus ++ mMult ++ mDiv ++ mEq ++ mLess ++ mIf
+
+makeapp a = a ++ [Makeapp]
+
+push op = [Pushfun op, Makeapp]
+
+functionTail n = [Update n, Slide (n+1), Unwind, Call, Return]
+
+varTail = [Update 0, Slide 1, Unwind, Call, Return]
+
+allocMake = [Alloc, Makeapp]
+
+slideLet n = [SlideLet n]
+
+initDef :: [DefCell]
+initDef = 
+    [ ("false",(0,6))
+    , ("true",(0,6))
+    , ("not",(1,7))
+    , ("negate",(1,7))
+    , ("|",(2,10))
+    , ("&",(2,10))
+    , ("+",(2,10))
+    , ("-",(2,10))
+    , ("*",(2,10))
+    , ("/",(2,10))
+    , ("==",(2,10))
+    , ("<",(2,10))
+    , ("if", (3,11))
+    ]
 
 mFalse = [Pushval (BoolX False)
     , Update 0
