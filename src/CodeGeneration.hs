@@ -43,10 +43,10 @@ translateTree subtree  =
         FuncDef name args expr -> translateFunc name args expr $ createLocalEnv [] 0
 
 translateVar :: String -> Expr -> LocalEnvironment -> [Instructions]
-translateVar name expr locEnv = evalExpr expr locEnv ++ [Update 0, Slide 1, Unwind, Call, Return]
+translateVar name expr locEnv = evalExpr expr locEnv ++ varTail
 
 translateFunc :: String -> Args -> Expr -> LocalEnvironment -> [Instructions]
-translateFunc name args expr localEnv = evalExpr expr localEnv ++ [Update (length args), Slide (length args + 1), Unwind, Call, Return]
+translateFunc name args expr localEnv = evalExpr expr localEnv ++ functionTail (length args)
 
 evalExpr :: Expr -> LocalEnvironment -> [Instructions]
 evalExpr expr locEnv = 
@@ -73,32 +73,32 @@ evalLocalDefs locdefs@((LocDef name expr):xs) localEnv i@counter = evalExpr expr
 evalLetExpr expr locDefs localEnv i@counter = evalExpr expr ((addLetEnv (reverse (locDefs)) localEnv i)) ++ [SlideLet (length locDefs)]
 
 translatePlus (PlusX expr EmptyExpr) env = evalExpr expr env ++ push "+"
-translatePlus (PlusX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (PlusX expr1 EmptyExpr) (increment env)
+translatePlus (PlusX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (PlusX expr1 EmptyExpr) env
         
 translateMinus (MinusX expr EmptyExpr) env = evalExpr expr env ++ push"-"
-translateMinus (MinusX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (MinusX expr1 EmptyExpr) (increment env)
+translateMinus (MinusX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (MinusX expr1 EmptyExpr) env
 
 translateMult (MultX expr EmptyExpr) env = evalExpr expr env ++ push "*"
-translateMult (MultX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (MultX expr1 EmptyExpr) (increment env)
+translateMult (MultX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (MultX expr1 EmptyExpr) env
 
 translateDiv (DivX expr EmptyExpr) env = evalExpr expr env ++ push "/"
-translateDiv (DivX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (DivX expr1 EmptyExpr) (increment env)
+translateDiv (DivX expr1 expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (DivX expr1 EmptyExpr) env
 
 translateOr (OrX expr EmptyExpr) env = evalExpr expr env ++ push "|"
-translateOr (OrX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (OrX expr EmptyExpr) (increment env)
+translateOr (OrX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (OrX expr EmptyExpr) env
 
 translateAnd (AndX expr EmptyExpr) env = evalExpr expr env ++ push "&"
-translateAnd (AndX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (AndX expr EmptyExpr) (increment env)
+translateAnd (AndX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (AndX expr EmptyExpr) env
 
 translateSmaller (SmallerX expr EmptyExpr) env = evalExpr expr env ++ push "<"
-translateSmaller (SmallerX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (SmallerX expr EmptyExpr) (increment env)
+translateSmaller (SmallerX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (SmallerX expr EmptyExpr)  env
 
 translateEquals (EqualsX expr EmptyExpr) env = evalExpr expr env ++ push "=="
-translateEquals (EqualsX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalExpr (EqualsX expr EmptyExpr) (increment env)
+translateEquals (EqualsX expr expr2) env = makeapp $ evalExpr expr2 env ++ evalAndInc (EqualsX expr EmptyExpr) env
 
 translateIf (IfX expr1 EmptyExpr EmptyExpr) env = evalExpr expr1 env ++ push "if"
-translateIf (IfX expr1 expr2 EmptyExpr) env = makeapp $ evalExpr expr2 env ++ evalExpr (IfX expr1 EmptyExpr EmptyExpr) (increment env)
-translateIf (IfX expr1 expr2 expr3) env = makeapp $ evalExpr expr3 env ++ evalExpr (IfX expr1 expr2 EmptyExpr) (increment env)
+translateIf (IfX expr1 expr2 EmptyExpr) env = makeapp $ evalExpr expr2 env ++ evalAndInc (IfX expr1 EmptyExpr EmptyExpr) env
+translateIf (IfX expr1 expr2 expr3) env = makeapp $ evalExpr expr3 env ++ evalAndInc (IfX expr1 expr2 EmptyExpr) env
 
 --------------------Local Environments--------------------
 createLocalEnv (x:xs) i@counter = (x,i+1) : createLocalEnv xs (i+1)
@@ -112,6 +112,8 @@ updateLocalVarValue localDef localEnv i@counter = if length localDef > 1 then ad
 --------------------Helpers--------------------
 makeapp a = a ++ [Makeapp]
 push op = [Pushfun op, Makeapp]
+functionTail n = [Update n, Slide (n+1), Unwind, Call, Return]
+varTail = [Update 0, Slide 1, Unwind, Call, Return]
 
 isInEnv a ((x,y):xs) = a == x || isInEnv a xs 
 isInEnv a [] = False
@@ -120,6 +122,9 @@ getPos a ((x,y):xs) = if a == x then y else getPos a xs
 getPos a [] = 4
 
 increment = map(\(x,y) -> (x,y+1))
+
+evalAndInc :: Expr -> LocalEnvironment -> [Instructions]
+evalAndInc expr env = evalExpr expr (increment env)
 
 initDef :: [DefCell]
 initDef = 
