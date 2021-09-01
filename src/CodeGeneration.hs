@@ -63,8 +63,8 @@ evalExpr expr locEnv =
         e@(AndX expr expr2) -> translateAnd e locEnv
         e@(SmallerX expr expr2) -> translateSmaller e locEnv
         e@(EqualsX expr expr2) -> translateEquals e locEnv
-        (NotX expr) -> evalExpr expr locEnv ++ push "Not"
-        (NegX expr) -> evalExpr expr locEnv ++ push "Negate"
+        (NotX expr) -> evalExpr expr locEnv ++ push "not"
+        (NegX expr) -> evalExpr expr locEnv ++ push "negate"
         e@(IfX expr1 expr2 expr3) -> translateIf e locEnv
         (LetX locDefs expr) -> evalLocalDefs locDefs locEnv (-1) ++ evalLetExpr expr locDefs locEnv (-1)
 

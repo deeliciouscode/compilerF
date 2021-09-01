@@ -34,7 +34,7 @@ runtest3 = emulate (code3, stack2, global2, heap2, i2, t2, p2)
 --                 | VAL Value
 
 testHeap :: [HeapType]
-testHeap = [DEF "a" 1 2, IND 1, APP' 1 2, VAL (Int 1)]
+testHeap = [IND 1, IND 1, APP' 1 2, VAL (Int 1), DEF "a" 1 2]
 
 -- Emulator
 type Context = (Code, Stack, Global, Heap, I, T, P)
@@ -65,6 +65,7 @@ execute all@(code, stack, global, heap, i, t, p) =
     case readCode code p of
         -- Reset               -> Debug (show Reset)
         -- Reset               -> Debug (show . execReset $ increaseP all)
+        -- Reset               -> Debug (show . get4 . execReset $ increaseP all)
         Reset               -> execute . execReset $ increaseP all
 
         -- Pushfun name        -> Debug (show (Pushfun name))
@@ -141,19 +142,19 @@ execPushfun :: String -> Context -> Context
 execPushfun name (code, stack, global, heap, i, t, p) = (code, stack', global, heap, i, t', p)
                                 where
                                     t' = t + 1
-                                    stack' = pushHRef name stack heap
+                                    stack' = pushHRef name stack global
 
-pushHRef :: String -> Stack -> Heap -> Stack
-pushHRef name stack heap = stack ++ [H index]
+pushHRef :: String -> Stack -> Global -> Stack
+pushHRef name stack global = stack ++ [H index]
                                 where
-                                    index = indexByName name heap
+                                    index = indexByName name global
 
-indexByName :: String -> Heap -> Int
-indexByName name heap = indexByNameFromZero name heap 0
+indexByName :: String -> Global -> Int
+indexByName name global = indexByNameFromZero name global 0
 
-indexByNameFromZero :: String -> Heap -> Int -> Int
+indexByNameFromZero :: String -> Global -> Int -> Int
 indexByNameFromZero name [] i = error $ "Something went wrong in indexByNameFromZero. Name not found. " ++ show name  
-indexByNameFromZero name (DEF defName n a : rest) i
+indexByNameFromZero name ((defName, (_, _)) : rest) i
                                             | name == defName   = i
 indexByNameFromZero name (other:rest) i = indexByNameFromZero name rest (i + 1)
 
