@@ -24,8 +24,8 @@ concatInstructions code = mHead ++ code ++ mTail
 createDefCell name arity instructions =  (name, (arity, length instructions))
 
 generateDef :: SubTree -> DefCell
-generateDef (VarDef name expr) = createDefCell name 0 (translateVar name expr (createLocalEnv [] 1)) 
-generateDef (FuncDef name args expr) = createDefCell name (length args) (translateFunc name args expr initLocEnv)
+generateDef (VarDef name expr) = createDefCell name 0 $ translateVar name expr (createLocalEnv [] 1)
+generateDef (FuncDef name args expr) = createDefCell name (length args) $ translateFunc name args expr initLocEnv
 
 setIndices :: Int -> [DefCell] -> GlobalEnvironment
 setIndices n [(a,(x,y))] = [(a,(x,n))]
@@ -38,8 +38,8 @@ astToDefList = map generateDef
 translateTree :: SubTree -> [Instructions]
 translateTree subtree  =
     case subtree of
-        VarDef name expr -> translateVar name expr initLocEnv
-        FuncDef name args expr -> translateFunc name args expr initLocEnv
+        VarDef name expr -> translateVar name expr (createLocalEnv [] 0)
+        FuncDef name args expr -> translateFunc name args expr (createLocalEnv args 0)
 
 translateVar :: String -> Expr -> LocalEnvironment -> [Instructions]
 translateVar name expr locEnv = translExpr expr locEnv ++ varTail
@@ -53,7 +53,7 @@ translAndInc expr env = translExpr expr (increment env)
 translExpr :: Expr -> LocalEnvironment -> [Instructions]
 translExpr expr locEnv = 
     case expr of
-        VarX a -> if isInEnv a locEnv then [Pushparam (getPos a locEnv)] else [Pushfun a] 
+        VarX a -> if isInEnv a locEnv then [Pushparam (getPos a locEnv)] else [Pushfun  a] 
         IntX a -> [Pushval (IntX a)]
         BoolX a -> [Pushfun (show a)]
         e@(PlusX expr1 expr2) -> translatePlus e locEnv
@@ -68,6 +68,7 @@ translExpr expr locEnv =
         (NegX expr) -> translExpr expr locEnv ++ push "Negate"
         e@(IfX expr1 expr2 expr3) -> translateIf e locEnv
         (LetX locDefs expr) -> translLocDefs locDefs locEnv (-1) ++ translLetExpr expr locDefs locEnv (-1)
+        e@(AppX expr1 expr2) -> translAppExpr e locEnv
 
 translLocDefs [] _ _ = [] 
 translLocDefs locdefs@((LocDef name expr):xs) localEnv i@counter = translExpr expr (updateLocalVarValue (reverse locdefs) localEnv i) ++ allocMake ++ translLocDefs xs (updateLocalVarValue (reverse locdefs) localEnv i) i
@@ -102,6 +103,8 @@ translateIf (IfX expr1 EmptyExpr EmptyExpr) env = translExpr expr1 env ++ push "
 translateIf (IfX expr1 expr2 EmptyExpr) env = makeapp $ translExpr expr2 env ++ translAndInc (IfX expr1 EmptyExpr EmptyExpr) env
 translateIf (IfX expr1 expr2 expr3) env = makeapp $ translExpr expr3 env ++ translAndInc (IfX expr1 expr2 EmptyExpr) env
 
+translAppExpr (AppX expr1 expr2) locEnv = makeapp $ translExpr expr2 locEnv ++ translExpr expr1 locEnv
+
 --------------------Local Environments--------------------
 createLocalEnv (x:xs) i@counter = (x,i+1) : createLocalEnv xs (i+1)
 createLocalEnv [] _ = []
@@ -130,3 +133,4 @@ testProg4 = [FuncDef "func" ["a","b","c"] (AndX (BoolX True) (BoolX False))]
 testProg5 = [VarDef "f" ( LetX [LocDef "a" (IntX 1)] (VarX "a") )]
 testProg6 = [VarDef "f" (LetX [LocDef "a" (IntX 1), LocDef "b" (IntX 2)] (PlusX (VarX "a") (VarX "b"))) ]
 testProg7 = [VarDef "f" (LetX [LocDef "a" (IntX 1), LocDef "b" (IntX 2), LocDef "c" (IntX 3)] (PlusX (VarX "a") (PlusX (VarX "b") (VarX "c"))))]
+testProg9 = [FuncDef "id" ["a"] (VarX "a"), FuncDef "main" [] (AppX (VarX "id") (IntX 0))]
