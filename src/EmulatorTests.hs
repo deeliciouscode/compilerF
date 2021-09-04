@@ -680,9 +680,6 @@ code3 = [
     Return
     ]
 
-stack3 :: [a]
-stack3 = []
-
 global3 :: [(String, (Int, Int))]
 global3 = [
     ("main",(0,4)),
