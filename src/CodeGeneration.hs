@@ -8,8 +8,8 @@ import DataStructures
 import Instructions
 
 -------------------------- Main Functions --------------------------
-main :: Ast -> (GlobalEnvironment, Code)
-main ast = (generateDefList ast, generateCode ast)
+generate :: Ast -> (GlobalEnvironment, Code)
+generate ast = (generateDefList ast, generateCode ast)
 
 generateDefList :: Ast -> GlobalEnvironment
 generateDefList ast = setIndices 4 $ astToDefList ast ++ initDef
