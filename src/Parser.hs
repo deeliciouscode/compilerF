@@ -79,14 +79,6 @@ parseLocalDef (TAtomExpr (T_VAR (Name name)) : tokensRest0) =
     (Just _, tokensRest1) -> (Nothing, Error "parseEqualSign returned something other than TEQUAL (in parseLocalDef, Atom case)" : tokensRest1)
 parseLocalDef tokens = (Nothing, Error "parseLocalDef was called with the following unsupported token: " : tokens)
 
--- parseRestLocalDefs :: Parser Token RestLocDefs
--- parseRestLocalDefs (T_IN : tokensRest0) = (Just LDeps, tokensRest0) --maybe all
--- parseRestLocalDefs all@(TAtomExpr (T_VAR (Name name)) : tokensRest0) =
---   case parseLocalDefs all of
---     (Nothing, tokensRest1) -> (Nothing, Error "parseLocalDefs returned Nothing (in parseRestLocalDefs, Atom case)" : tokensRest1)
---     (locDefs, tokensRest1) -> (RLocDefs <$> locDefs, tokensRest1)
--- parseRestLocalDefs tokens = (Nothing, Error "parseRestLocalDefs was called with the following unaccepted token: " : tokens)
-
 ------------------------------- EXPRESIONS -------------------------------
 
 parseExpression :: Parser Token Expr

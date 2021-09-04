@@ -15,5 +15,5 @@
 -- main = fun 1 2 (3 + 2 + 10) 4;
 
 main = f 0 1 2; 
-f a b c = k1 a b; 
-k1 a b = b;
+f a b c = not (8 == (c * c * c)); 
+-- k1 a b = b;

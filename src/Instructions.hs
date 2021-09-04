@@ -65,7 +65,7 @@ mNegate = [Pushparam 1
 mNot = [Pushparam 1
     , Unwind
     , Call
-    , Operator Plus
+    , Operator Not
     , Update 1
     , Slide 2
     , Return
