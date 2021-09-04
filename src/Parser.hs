@@ -243,6 +243,7 @@ parseExpr7 tokens =
     (Just [], rest) -> (Just EmptyExpr, rest) 
 
 leftAssociate :: [Expr] -> Expr
+leftAssociate [left, right] = AppX left right
 leftAssociate (x:xs:xss) = leftAssociate' (AppX x xs) xss
 leftAssociate [x] = x
 leftAssociate [] = error "Error in leftAssociate: [] not expected here"

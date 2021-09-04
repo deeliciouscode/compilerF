@@ -26,4 +26,6 @@
 
 -- main = k1 0 (k1 1 2); k1 a b = b;
 
-main = - (1 + 2);
+-- main = - (1 + 2);
+
+main = id 0; id a = a;
