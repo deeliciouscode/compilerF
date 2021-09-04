@@ -18,6 +18,12 @@
 -- f a b c = not (8 == (c * c * c)); 
 -- k1 a b = b;
 
-main = first 0 1 2; 
-first a b c = second a b; 
-second a b = b;
+-- main = first 0 1 2; 
+-- first a b c = second a b; 
+-- second a b = b;
+
+-- main = let a = 1 in a * 2;
+
+-- main = k1 0 (k1 1 2); k1 a b = b;
+
+main = - (1 + 2);

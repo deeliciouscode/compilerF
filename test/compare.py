@@ -4,23 +4,15 @@ phillips = """Reset,
     Halt,
     Pushval (Integer 2),
     Pushval (Integer 1),
-    Pushval (Integer 0),
-    Pushfun "f",
+    Pushfun "k1",
     Makeapp,
+    Makeapp,
+    Pushval (Integer 0),
+    Pushfun "k1",
     Makeapp,
     Makeapp,
     Update 0,
     Slide 1,
-    Unwind,
-    Call,
-    Return,
-    Pushparam 2,
-    Pushparam 2,
-    Pushfun "k1",
-    Makeapp,
-    Makeapp,
-    Update 3,
-    Slide 4,
     Unwind,
     Call,
     Return,
@@ -148,7 +140,7 @@ phillips = """Reset,
     Call,
     Return"""
 
-ours = """Reset,Pushfun "main",Call,Halt,Pushval (IntX 2),Pushval (IntX 1),Pushval (IntX 0),Pushfun "f",Makeapp,Makeapp,Makeapp,Update 0,Slide 1,Unwind,Call,Return,Pushparam 2,Pushparam 1,Pushfun "k1",Makeapp,Makeapp,Update 3,Slide 4,Unwind,Call,Return,Pushparam 2,Update 2,Slide 3,Unwind,Call,Return,Pushval (BoolX False),Update 0,Slide 1,Unwind,Call,Return,Pushval (BoolX True),Update 0,Slide 1,Unwind,Call,Return,Pushparam 1,Unwind,Call,Operator Not,Update 1,Slide 2,Return,Pushparam 1,Unwind,Call,Operator Negate,Update 1,Slide 2,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Or,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator And,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Plus,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Minus,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Times,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator DividedBy,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Equals,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator LessThan,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Pushparam 5,Operator If,Update 3,Slide 4,Unwind,Call,Return"""
+ours = """Reset,Pushfun "main",Call,Halt,Pushval (IntX 2),Pushval (IntX 1),Pushfun "k1",Makeapp,Pushval (IntX 0),Pushfun "k1",Makeapp,Makeapp,Makeapp,Update 0,Slide 1,Unwind,Call,Return,Pushparam 2,Update 2,Slide 3,Unwind,Call,Return,Pushval (BoolX False),Update 0,Slide 1,Unwind,Call,Return,Pushval (BoolX True),Update 0,Slide 1,Unwind,Call,Return,Pushparam 1,Unwind,Call,Operator Not,Update 1,Slide 2,Return,Pushparam 1,Unwind,Call,Operator Negate,Update 1,Slide 2,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Or,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator And,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Plus,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Minus,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Times,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator DividedBy,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator Equals,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Unwind,Call,Operator LessThan,Update 2,Slide 3,Return,Pushparam 1,Unwind,Call,Pushparam 3,Pushparam 5,Operator If,Update 3,Slide 4,Unwind,Call,Return"""
 
 a = phillips.split(",")
 b = ours.split(",")

@@ -6,18 +6,6 @@ import EmulatorTests
 import Helpers
 import CodeGeneration
 
-
--- Notes
--- P := P + 1 bei jedem neuen Befehl es sei denn es wird 
--- expizit geändert.
-
--- Zyklus:
--- P := 0; I := Code[P]
--- while (I /= Halt) 
---      P := P + 1;
---      <Run Instruction in I>
---      I := Code[P];
-
 -- Test
 runtest1 :: Result
 runtest1 = emulate (code1, stack, global1, heap, i, t, p)
@@ -31,14 +19,11 @@ runtest2' = emulate (code2', stack, global2, heap, i, t, p)
 runtest3 :: Result
 runtest3 = emulate (code3, stack, global3, heap, i, t, p)
 
-
 runtest4 :: Result
 runtest4 = emulate (code4, stack, global4, heap, i, t, p)
 
--- data HeapType   = DEF String NumArgs CodeAdr
---                 | IND HeapAdr
---                 | APP' HeapAdr HeapAdr
---                 | VAL Value
+runtest5 :: Result
+runtest5 = emulate (code5, stack, global5, heap, i, t, p)
 
 testHeap :: [HeapType]
 testHeap = [IND 1, IND 1, APP' 1 2, VAL (Int 1), DEF "a" 1 2]
@@ -70,68 +55,21 @@ fillFromGlobal ((name, (n, a)):rest) heap   = DEF name n a : fillFromGlobal rest
 execute :: Context -> Result
 execute all@(code, stack, global, heap, i, t, p) =
     case readCode code p of
-        -- Reset               -> Debug (show Reset)
-        -- Reset               -> Debug (show . execReset $ increaseP all)
-        -- Reset               -> Debug (show . get4 . execReset $ increaseP all)
         Reset               -> execute . execReset $ increaseP all
-
-        -- Pushfun name        -> Debug (show (Pushfun name))
-        -- Pushfun name        -> Debug (show . get2 . execPushfun name $ increaseP all)
-        -- Pushfun "c"         -> Debug (show . get2 . execPushfun "a" $ increaseP all)
         Pushfun name        -> execute . execPushfun name $ increaseP all
-
-        -- Call                -> Debug (show Call)
-        -- Call                -> Debug (show . get2 . execCall $ increaseP all)
         Call                -> execute . execCall $ increaseP all
-
-        -- Update int          -> Debug (show (Update int))
-        -- Update int          -> Debug (show . get4 . execUpdate int $ increaseP all)
-        -- Update 2            -> Debug (show . get4 . execUpdate 2 $ increaseP all)
         Update int          -> execute . execUpdate int $ increaseP all
-
-        -- Slide int           -> Debug (show (Slide int))
-        -- Slide int           -> Debug (show [(get4 . execSlide int $ increaseP all) !! 23])
-        -- Slide 3             -> Debug (show . get6 . execSlide 3 $ increaseP all)
         Slide int           -> execute . execSlide int $ increaseP all
-
-        -- Unwind              -> Debug (show Unwind)
-        -- Unwind              
-        --                     | i == Halt -> Debug (show . get2 . execUnwind $ increaseP all)
-        --                     | otherwise -> execute . execUnwind $ increaseP all
         Unwind              -> execute . execUnwind $ increaseP all
-
-        -- Pushval val         -> Debug (show (Pushval val))
-        -- Pushval val         -> Debug (show . get6 . execPushval val $ increaseP all)
         Pushval val         -> execute . execPushval val $ increaseP all
-
-        -- Return              -> Debug (show Return)
-        -- Return              -> Debug (show . get6 . execReturn $ increaseP all)
         Return              -> execute . execReturn $ increaseP all
-
-        -- Halt                -> Debug (show Halt)
         Halt                -> execHalt $ increaseP all
-
-        -- Makeapp             -> Debug (show Makeapp)
-        -- Makeapp             -> Debug ((show . get2 . execMakeapp $ increaseP all) ++ (show . get4 . execMakeapp $ increaseP all) ++ (show . get6 . execMakeapp $ increaseP all))
         Makeapp             -> execute . execMakeapp $ increaseP all
-
-        -- Pushparam n         -> Debug (show (Pushparam int))
-        -- Pushparam n
-        --                     | i == Halt -> Debug (show . get6 . execPushparam n $ increaseP all)
-        --                     | otherwise -> execute . execPushparam n $ increaseP all
         Pushparam n         -> execute . execPushparam n $ increaseP all
-        
-        -- Operator op         -> Debug (show (Operator op))
-        -- Operator op         -> Debug (show . get6 . execOperator op $ increaseP all)
         Operator op         -> execute . execOperator op $ increaseP all
-
-        Alloc               -> Debug (show Alloc)
-        
+        Alloc               -> execute . execAlloc $ increaseP all
         SlideLet int        -> Debug (show (SlideLet int))
-        
-        -- should never be called
         EmptyInstruction    -> Debug (show EmptyInstruction)
-
 
 readCode :: Code -> P -> I
 readCode code p = code !! p
@@ -410,3 +348,6 @@ execOperator If (code, stack, global, heap, i, t, p) =
                     stack'  = take (length stack - 3) stack ++ [stack !! t]
             VAL (Int x)     -> error "Something went wrong in execOperator If. Can't 'not' Bool."
             _               -> error "Something went wrong in execOperator If. Only Val v is expected here."
+
+execAlloc :: Context -> Context
+execAlloc (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)

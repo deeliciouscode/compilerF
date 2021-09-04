@@ -5,7 +5,7 @@ import Data.Maybe
 import Helpers
 import Lexer
 import DataStructures
-import Distribution.Simple.Setup (BuildFlags(buildArgs))
+import Debug.Trace
 
 type Parser token a = [token] -> (Maybe a, [token])
 
@@ -239,41 +239,43 @@ parseExpr7 :: Parser Token  Expr
 parseExpr7 tokens = 
   case parseExpr7' tokens of
     (Nothing, rest) -> (Nothing, Error "parseAtomicExpr7' returned Nothing" : rest)
-    (Just app@(AppX _ _), rest) -> (Just (leftAssociate app), rest)
-    other -> other
+    (Just all@(x:xs), rest) -> (Just (leftAssociate all), rest)
+    (Just [], rest) -> (Just EmptyExpr, rest) 
 
-leftAssociate :: Expr -> Expr
-leftAssociate (AppX left right@(AppX left' right')) = leftAssociate' (AppX left left') right
-leftAssociate app = app 
+leftAssociate :: [Expr] -> Expr
+leftAssociate (x:xs:xss) = leftAssociate' (AppX x xs) xss
+leftAssociate [x] = x
+leftAssociate [] = error "Error in leftAssociate: [] not expected here"
 
-leftAssociate' :: Expr -> Expr -> Expr 
-leftAssociate' new (AppX left right@(AppX left' right'))  = leftAssociate' (AppX new left') right
-leftAssociate' new (AppX left right)                      = AppX new right
-leftAssociate' _ other                                    = error $ "leftAssociate does not expects this kind of Expression here: " ++ show other
+leftAssociate' :: Expr -> [Expr] -> Expr 
+leftAssociate' new (x:xs:xss:xsss)      = leftAssociate' (AppX new xs) xsss
+leftAssociate' new [left, right]        = AppX new right
+leftAssociate' new [last]               = AppX new last
+leftAssociate' _ other                  = error $ "leftAssociate does not expects this kind of Expression here: " ++ show other
 
-parseExpr7' :: Parser Token  Expr
+parseExpr7' :: Parser Token  [Expr]
 parseExpr7' tokens =
   case parseAtomicExpr tokens of
     (Nothing, rest) -> (Nothing, Error "parseAtomicExpr returned Nothing" : rest)
-    (Just atomExpr, tokensRest0) -> 
+    (Just expr, tokensRest0) -> 
       case parseRest7 tokensRest0 of
-        (Just RE7eps, tokensRest1)      -> (Just atomExpr, tokensRest1)
-        (Just (APP expr7), tokensRest1) -> (Just (AppX atomExpr expr7), tokensRest1)
+        (Just [], tokensRest1)          -> (Just [expr], tokensRest1)
+        (Just expr7, tokensRest1)       -> (Just (expr : expr7), tokensRest1)
         (Nothing, tokensRest1)          -> (Nothing, Error "parseRest7 returned Nothing" : tokensRest1)
 
-parseRest7 :: Parser Token RestExpr7
+parseRest7 :: Parser Token [Expr]
 parseRest7 [] = (Nothing, [Error "parseRest7 should never be called with empty list of tokens, maybe a semicolon is missing?"])
-parseRest7 (TSEMICOL : tokensRest0) = (Just RE7eps, tokensRest0)
-parseRest7 (T_THEN : tokensRest0) = (Just RE7eps, tokensRest0)
-parseRest7 (T_ELSE : tokensRest0) = (Just RE7eps, tokensRest0)
-parseRest7 all@(T_IN : tokensRest0) = (Just RE7eps, all)
-parseRest7 all@(TRPAREN : tokensRest0) = (Just RE7eps, all)
+parseRest7 (TSEMICOL : tokensRest0) = (Just [], tokensRest0)
+parseRest7 (T_THEN : tokensRest0) = (Just [], tokensRest0)
+parseRest7 (T_ELSE : tokensRest0) = (Just [], tokensRest0)
+parseRest7 all@(T_IN : tokensRest0) = (Just [], all)
+parseRest7 all@(TRPAREN : tokensRest0) = (Just [], all)
 -- parseRest7 all@(TRPAREN : tokensRest0) = (Just RE7eps, all)
 parseRest7 all@(next : tokens)
-                      | isOperator next = (Just RE7eps, all)
+                      | isOperator next = (Just [], all)
                       | otherwise = case parseExpr7' all of
                         (Nothing, tokensRest) -> (Nothing, Error "Error in parseRest7: " : tokensRest)
-                        (expr7, tokensRest) -> (APP <$> expr7, tokensRest)
+                        (expr7, tokensRest) -> (expr7, tokensRest)
 
 ----------------------------------------------------------------------------------------
 
