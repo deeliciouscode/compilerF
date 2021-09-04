@@ -31,6 +31,10 @@ runtest2' = emulate (code2', stack, global2, heap, i, t, p)
 runtest3 :: Result
 runtest3 = emulate (code3, stack, global3, heap, i, t, p)
 
+
+runtest4 :: Result
+runtest4 = emulate (code4, stack, global4, heap, i, t, p)
+
 -- data HeapType   = DEF String NumArgs CodeAdr
 --                 | IND HeapAdr
 --                 | APP' HeapAdr HeapAdr

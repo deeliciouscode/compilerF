@@ -31,6 +31,12 @@ cabal.project.local~
 
 *.bry
 
+### Python ###
+
+__pycache__/*
+__pycache__/**/*
+__pycache__/
+
 
 ### vscode ###
 .vscode/*
