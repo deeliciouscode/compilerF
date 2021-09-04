@@ -14,6 +14,10 @@
 -- fun a b c d = c; 
 -- main = fun 1 2 (3 + 2 + 10) 4;
 
-main = f 0 1 2; 
-f a b c = not (8 == (c * c * c)); 
+-- main = f 0 1 2; 
+-- f a b c = not (8 == (c * c * c)); 
 -- k1 a b = b;
+
+main = first 0 1 2; 
+first a b c = second a b; 
+second a b = b;

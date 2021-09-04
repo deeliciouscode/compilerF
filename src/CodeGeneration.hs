@@ -1,4 +1,5 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module CodeGeneration where
 
 import Parser
@@ -103,7 +104,7 @@ translateIf (IfX expr1 EmptyExpr EmptyExpr) env = translExpr expr1 env ++ push "
 translateIf (IfX expr1 expr2 EmptyExpr) env = makeapp $ translExpr expr2 env ++ translAndInc (IfX expr1 EmptyExpr EmptyExpr) env
 translateIf (IfX expr1 expr2 expr3) env = makeapp $ translExpr expr3 env ++ translAndInc (IfX expr1 expr2 EmptyExpr) env
 
-translAppExpr (AppX expr1 expr2) locEnv = makeapp $ translExpr expr2 locEnv ++ translExpr expr1 locEnv
+translAppExpr (AppX expr1 expr2) locEnv = makeapp $ translExpr expr2 locEnv ++ translAndInc expr1 locEnv
 
 --------------------Local Environments--------------------
 createLocalEnv (x:xs) i@counter = (x,i+1) : createLocalEnv xs (i+1)
