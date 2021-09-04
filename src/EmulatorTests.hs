@@ -1,7 +1,24 @@
------------------------- 1 ------------------------ 
 module EmulatorTests where
-
 import DataStructures
+
+--------------------- general --------------------- 
+
+stack :: [a]
+stack = []
+
+heap :: [a]
+heap = []
+
+i :: Instructions
+i = EmptyInstruction 
+
+t :: Int
+t = 0
+
+p :: Int
+p = 0
+
+------------------------ 1 ------------------------ 
 
 program1 :: [Char]
 program1 = "a = 1; main = a;"
@@ -143,9 +160,6 @@ code1 = [
     Return
     ]
 
-stack1 :: [a]
-stack1 = []
-
 global1 :: [(String, (Int, Int))]
 global1 = [
     ("a",(0,4)),
@@ -164,18 +178,6 @@ global1 = [
     ("<",(2,112)),
     ("if",(3,122))
     ]
-
-heap1 :: [a]
-heap1 = []
-
-i1 :: Instructions
-i1 = EmptyInstruction 
-
-t1 :: Int
-t1 = 0
-
-p1 :: Int
-p1 = 0
 
 ------------------------ 2 ------------------------ 
 
@@ -347,8 +349,8 @@ code2 = [
     Return
     ]
 
-code3 :: [Instructions]
-code3 = [
+code2' :: [Instructions]
+code2' = [
     Reset,
     Pushfun "main",
     Call,
@@ -512,9 +514,6 @@ code3 = [
     Return
     ]
 
-stack2 :: [a]
-stack2 = []
-
 global2 :: [(String, (Int, Int))]
 global2 = [
     ("negate",(1,63)),
@@ -535,14 +534,170 @@ global2 = [
     ("a",(0,4))
     ]
 
-heap2 :: [a]
-heap2 = []
+------------------------ 3 ------------------------ 
 
-i2 :: Instructions
-i2 = EmptyInstruction 
+program3 :: [Char]
+program3 = "main = k1 0 1; k1 a b = b;"
 
-t2 :: Int
-t2 = 0
+code3 :: [Instructions]
+code3 = [
+    Reset,
+    Pushfun "main",
+    Call,
+    Halt,
+    Pushval (IntX 1),
+    Pushval (IntX 0),
+    Pushfun "k1",
+    Makeapp,
+    Makeapp,
+    Update 0,
+    Slide 1,
+    Unwind,
+    Call,
+    Return,
+    Pushparam 2,
+    Update 2,
+    Slide 3,
+    Unwind,
+    Call,
+    Return,
+    Pushval (BoolX False),
+    Update 0,
+    Slide 1,
+    Unwind,
+    Call,
+    Return,
+    Pushval (BoolX True),
+    Update 0,
+    Slide 1,
+    Unwind,
+    Call,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Operator Not,
+    Update 1,
+    Slide 2,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Operator Negate,
+    Update 1,
+    Slide 2,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator Or,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator And,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator Plus,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator Minus,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator Times,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator DividedBy,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator Equals,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Unwind,
+    Call,
+    Operator LessThan,
+    Update 2,
+    Slide 3,
+    Return,
+    Pushparam 1,
+    Unwind,
+    Call,
+    Pushparam 3,
+    Pushparam 5,
+    Operator If,
+    Update 3,
+    Slide 4,
+    Unwind,
+    Call,
+    Return
+    ]
 
-p2 :: Int
-p2 = 0
+stack3 :: [a]
+stack3 = []
+
+global3 :: [(String, (Int, Int))]
+global3 = [
+    ("main",(0,4)),
+    ("k1",(2,14)),
+    ("false",(0,20)),
+    ("true",(0,26)),
+    ("not",(1,32)),
+    ("negate",(1,39)),
+    ("|",(2,46)),
+    ("&",(2,56)),
+    ("+",(2,66)),
+    ("-",(2,76)),
+    ("*",(2,86)),
+    ("/",(2,96)),
+    ("==",(2,106)),
+    ("<",(2,116)),
+    ("if",(3,126))
+    ]

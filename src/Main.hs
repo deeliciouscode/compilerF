@@ -2,7 +2,6 @@ import System.IO
 import GHC.IO.Handle.Types (Handle(FileHandle))
 import Interpreter
 import Parser
-import Network.URI (parseAbsoluteURI)
 import CodeGeneration
 import DataStructures
 import Emulator

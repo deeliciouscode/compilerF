@@ -8,6 +8,8 @@ import DataStructures
 
 type Parser token a = [token] -> (Maybe a, [token])
 
+tokensTest = genListOfTokens "k1 a b = b; main = k1 0 1;"
+
 ------------------------------- PROGRAM -------------------------------
 
 parseProgram :: Parser Token Ast
@@ -260,6 +262,10 @@ parseRest7 all@(next : tokens)
                       | otherwise = case parseExpr7 all of
                         (Nothing, tokensRest) -> (Nothing, Error "Error in parseRest7: " : tokensRest)
                         (expr7, tokensRest) -> (APP <$> expr7, tokensRest)
+
+----------------------------------------------------------------------------------------
+
+testProg0 = [FuncDef "k1" ["a", "b"] (VarX "a"), FuncDef "main" [] (AppX (AppX (VarX "k1") (IntX 0)) (IntX 1))]
 
 ----------------------------------------------------------------------------------------
 

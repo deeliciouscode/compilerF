@@ -125,6 +125,8 @@ getPos a [] = 4
 increment = map(\(x,y) -> (x,y+1))
 
 --------------------Test Cases--------------------
+
+testProg0 = [FuncDef "k1" ["a", "b"] (VarX "a"), FuncDef "main" [] (AppX (AppX (VarX "k1") (IntX 0)) (IntX 1))]
 testProg2 = [FuncDef "f" ["a", "b"] (PlusX (VarX "a") (VarX "b"))]
 testProg8 = [VarDef "a" (IfX (BoolX True) (IntX 1) (IntX 2))] 
 testProg = [VarDef "a" (BoolX True), VarDef "b" (IntX 2)]

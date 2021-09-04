@@ -17,16 +17,18 @@ import Helpers
 --      <Run Instruction in I>
 --      I := Code[P];
 
-
 -- Test
 runtest1 :: Result
-runtest1 = emulate (code1, stack1, global1, heap1, i1, t1, p1)
+runtest1 = emulate (code1, stack, global1, heap, i, t, p)
 
 runtest2 :: Result
-runtest2 = emulate (code2, stack2, global2, heap2, i2, t2, p2)
+runtest2 = emulate (code2, stack, global2, heap, i, t, p)
+
+runtest2' :: Result
+runtest2' = emulate (code2', stack, global2, heap, i, t, p)
 
 runtest3 :: Result
-runtest3 = emulate (code3, stack2, global2, heap2, i2, t2, p2)
+runtest3 = emulate (code3, stack, global3, heap, i, t, p)
 
 -- data HeapType   = DEF String NumArgs CodeAdr
 --                 | IND HeapAdr
