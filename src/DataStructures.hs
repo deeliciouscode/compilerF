@@ -19,7 +19,7 @@ data HeapType   = DEF String NumArgs CodeAdr
             deriving (Show, Eq)
 
 -- Storages 
--- type Code       = [Instructions] [Output of Code Generation]
+-- type Code       = [Instructions] -- Output of Code Generation / defined below
 type Stack      = [StackType]
 type Global     = [(String, (NumArgs, CodeAdr))] -- Maybe have function that translates Operators to strings
 type Heap       = [HeapType]
