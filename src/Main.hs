@@ -30,25 +30,4 @@ main = do
     print result
     hClose fileHandle
 
-
 ---------------------------------------------------------------
-
--- k1 0 (k1 1 2)
-
--- k1 (k1 0 1) 2
-
--- k1 1 (3 + 2)
-
--- out' = AppX (AppX (AppX (VarX "k1") (IntX 0)))
--- out = AppX 
---         (AppX 
---             (AppX 
---                 (VarX "k1") 
---                 (IntX 0)
---             ) 
---             (AppX 
---                 (VarX "k1") 
---                 (IntX 1)
---             )
---         ) 
---         (IntX 2)

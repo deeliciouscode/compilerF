@@ -42,4 +42,28 @@
 
 -- main = let a = 1; b = k1 3 4 in a + b; k1 a b = b;
 
-main = -1 * 2;
+-- main = -1 * 2;
+
+
+
+-----------------------------------------------------
+
+-- fibonacci example:
+-- fib 0 = 0
+-- fib 1 = 1
+-- fib n = fib (n-1) + fib (n-2)
+
+-- in f:
+
+fib n = if n == 0
+        then 0
+        else 
+            if n == 1 
+            then 1 
+            else (fib (n - 1)) + (fib (n - 2));
+
+main = fib 12;
+
+-- WORKS! But really slow lol..
+
+-----------------------------------------------------
