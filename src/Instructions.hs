@@ -1,8 +1,6 @@
 module Instructions where
 import Data.Maybe
-import Data.Map
 import Parser
-import Data.Text
 import Helpers
 import Lexer
 import DataStructures

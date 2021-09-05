@@ -1,7 +1,6 @@
 module Emulator where
 
 import DataStructures
-import GHC.Types (Any)
 import EmulatorTests
 import Helpers
 import CodeGeneration

@@ -1,4 +1,2 @@
 main :: IO ()
-main = do
-    a <- getChar
-    print a
+main = putStrLn "Test suite not yet implemented"

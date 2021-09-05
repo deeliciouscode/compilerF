@@ -3,7 +3,6 @@ module Interpreter where
 import DataStructures
 import Lexer
 import Parser
-import Data.Text
 import Data.Maybe
 
 import CodeGeneration
