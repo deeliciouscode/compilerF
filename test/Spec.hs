@@ -3,10 +3,7 @@ import Test.Hspec.Runner
   (runSpec, defaultConfig, evaluateSummary, configFormatter)
 import Test.Hspec.Formatters (progress)
 import Emulator
-import Interpreter (emulateFromString)
 import DataStructures
-
--- emulateFromString "main = 1 + 2;"
 
 spec :: Spec
 spec = do
@@ -89,7 +86,21 @@ spec = do
   describe "Testprog7" $ do
     it "" $
       emulateFromString "main = false == (not false);" `shouldBe` RBool False
-
+  describe "Testprog8" $ do
+    it "" $
+      emulateFromString "main = let a = 1; b = 2; c = a in a + b + c;" `shouldBe` RInt 4
+  describe "Testprog9" $ do
+    it "" $
+      emulateFromString "main = let a = 1; b = a; c = 2 in a + b + c;" `shouldBe` RInt 4
+  describe "Testprog10" $ do
+    it "" $
+      emulateFromString "main = let a = 1; b = 2; c = b in a + b + c;" `shouldBe` RInt 5
+  describe "Testprog11" $ do
+    it "" $
+      emulateFromString "main = let a = 1; b = 2; c = b in a + b + c;" `shouldBe` RInt 5
+  describe "Testprog12" $ do
+    it "" $
+      emulateFromString "main = let a = 1; b = 2; c = (a + b) in if not (a == b) | (c / 2 == 0) then c else a;" `shouldBe` RInt 3
 
 main :: IO ()
 main = hspec spec

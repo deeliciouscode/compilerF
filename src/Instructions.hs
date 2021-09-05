@@ -1,32 +1,28 @@
 module Instructions where
-import Data.Maybe
-import Parser
-import Helpers
-import Lexer
 import DataStructures
 
-mHead :: [Instructions]
+mHead :: [Instruction]
 mHead = [Reset, Pushfun "main", Call, Halt]
 
-mTail :: [Instructions]
+mTail :: [Instruction]
 mTail = mFalse ++ mTrue ++ mNot ++ mNegate ++  mOr ++ mAnd ++ mPlus ++ mMinus ++ mMult ++ mDiv ++ mEq ++ mLess ++ mIf
 
-makeapp :: [Instructions] -> [Instructions]
+makeapp :: [Instruction] -> [Instruction]
 makeapp a = a ++ [Makeapp]
 
-push :: String -> [Instructions]
+push :: String -> [Instruction]
 push op = [Pushfun op, Makeapp]
 
-functionTail :: Int -> [Instructions]
+functionTail :: Int -> [Instruction]
 functionTail n = [Update n, Slide (n+1), Unwind, Call, Return]
 
-varTail :: [Instructions]
+varTail :: [Instruction]
 varTail = [Update 0, Slide 1, Unwind, Call, Return]
 
-allocMake :: [Instructions]
+allocMake :: [Instruction]
 allocMake = [Alloc, Makeapp]
 
-slideLet :: Int -> [Instructions]
+slideLet :: Int -> [Instruction]
 slideLet n = [SlideLet n]
 
 initDef :: [DefCell]
@@ -46,7 +42,7 @@ initDef =
     , ("if", (3,11))
     ]
 
-mFalse :: [Instructions]
+mFalse :: [Instruction]
 mFalse = [Pushval (BoolX False)
     , Update 0
     , Slide 1
@@ -55,7 +51,7 @@ mFalse = [Pushval (BoolX False)
     , Return
     ]
 
-mTrue :: [Instructions]
+mTrue :: [Instruction]
 mTrue = [Pushval (BoolX True)
     , Update 0
     , Slide 1
@@ -64,7 +60,7 @@ mTrue = [Pushval (BoolX True)
     , Return
     ]
 
-mNegate :: [Instructions]
+mNegate :: [Instruction]
 mNegate = [Pushparam 1
     , Unwind
     , Call
@@ -74,7 +70,7 @@ mNegate = [Pushparam 1
     , Return
     ]
 
-mNot :: [Instructions]
+mNot :: [Instruction]
 mNot = [Pushparam 1
     , Unwind
     , Call
@@ -84,7 +80,7 @@ mNot = [Pushparam 1
     , Return
     ]
 
-mOr :: [Instructions]
+mOr :: [Instruction]
 mOr = [Pushparam 1
     , Unwind
     , Call
@@ -97,7 +93,7 @@ mOr = [Pushparam 1
     , Return
     ]    
 
-mAnd :: [Instructions]
+mAnd :: [Instruction]
 mAnd = [Pushparam 1
     , Unwind
     , Call
@@ -110,7 +106,7 @@ mAnd = [Pushparam 1
     , Return
     ]
 
-mPlus :: [Instructions]
+mPlus :: [Instruction]
 mPlus = [Pushparam 1
     , Unwind
     , Call
@@ -123,7 +119,7 @@ mPlus = [Pushparam 1
     , Return
     ]    
 
-mMinus :: [Instructions]
+mMinus :: [Instruction]
 mMinus = [Pushparam 1
     , Unwind
     , Call
@@ -136,7 +132,7 @@ mMinus = [Pushparam 1
     , Return
     ]   
 
-mMult :: [Instructions]
+mMult :: [Instruction]
 mMult = [Pushparam 1
     , Unwind
     , Call
@@ -149,7 +145,7 @@ mMult = [Pushparam 1
     , Return
     ]    
 
-mDiv :: [Instructions]
+mDiv :: [Instruction]
 mDiv = [Pushparam 1
     , Unwind
     , Call
@@ -162,7 +158,7 @@ mDiv = [Pushparam 1
     , Return
     ]    
 
-mEq :: [Instructions]
+mEq :: [Instruction]
 mEq = [Pushparam 1
     , Unwind
     , Call
@@ -175,7 +171,7 @@ mEq = [Pushparam 1
     , Return
     ] 
 
-mLess :: [Instructions]
+mLess :: [Instruction]
 mLess = [Pushparam 1
     , Unwind
     , Call
@@ -188,7 +184,7 @@ mLess = [Pushparam 1
     , Return
     ]
     
-mIf :: [Instructions]
+mIf :: [Instruction]
 mIf = [Pushparam 1
     , Unwind
     , Call

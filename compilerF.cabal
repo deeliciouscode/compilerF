@@ -29,10 +29,8 @@ library
       Constants
       DataStructures
       Emulator
-      EmulatorTests
       Helpers
       Instructions
-      Interpreter
       Lexer
       Parser
   other-modules:

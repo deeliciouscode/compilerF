@@ -1,7 +1,6 @@
 import System.IO
 import GHC.IO.Handle.Types (Handle(FileHandle))
 import System.Environment
-import Interpreter
 import Parser
 import CodeGeneration
 import DataStructures
@@ -27,8 +26,6 @@ main = do
     print code
     putStrLn ""
     putStrLn "-------- Result --------"
-    let result = emulate (code, [], defList, [], EmptyInstruction, 0, 0)
+    let result = emulate (code, [], defList, [], 0, 0)
     print result
     hClose fileHandle
-
----------------------------------------------------------------

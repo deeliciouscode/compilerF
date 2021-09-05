@@ -26,7 +26,6 @@ type Stack      = [StackType]
 type Heap       = [HeapType]
 
 -- Registers
-type I          = Instructions
 type T          = Int
 type P          = Int
 
@@ -40,7 +39,7 @@ data Result     = RBool Bool
 
 --------------------------------------------------------
 
-data Instructions 
+data Instruction
   = Pushfun String 
   | Pushval Expr 
   | Reset 
@@ -55,7 +54,6 @@ data Instructions
   | Alloc 
   | SlideLet Int 
   | Update Int
-  | EmptyInstruction
   deriving (Show, Eq)  
 
 data OpInstrConstr  
@@ -91,7 +89,7 @@ type DefCell = (String, (Int,Int))
 
 type GlobalEnvironment = [DefCell]
 
-type Code = [Instructions]
+type Code = [Instruction]
 
 type Output = (GlobalEnvironment, Code)
 
