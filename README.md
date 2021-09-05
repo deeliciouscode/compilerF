@@ -123,7 +123,16 @@ CompOp                  ::= == | <
 
 1. Write the program you want to execute into a file. 
 
-2. 
+2. Run the command
+
+```
+stack run -- <path/to/file>
+```
+3. To run all the test cases defined in ```/tests/Spec.hs``` run:
+
+```
+```
+
 
 
 By convention we were using filenames ending with .f. 
