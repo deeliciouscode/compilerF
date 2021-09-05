@@ -28,4 +28,14 @@
 
 -- main = - (1 + 2);
 
-main = id 0; id a = a;
+-- main = id 0; id a = a;
+
+-- main = f 0 1 2; f a b c = c;
+
+-- main = false == (not false);
+
+-- main = true;
+
+-- main = f 0 1 2; f a b c = c;
+
+main = f 0 1 2; f a b c = k1 a b; k1 a b = b;

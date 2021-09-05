@@ -250,7 +250,7 @@ leftAssociate [] = error "Error in leftAssociate: [] not expected here"
 
 leftAssociate' :: Expr -> [Expr] -> Expr 
 leftAssociate' new (x:xs:xss:xsss)      = leftAssociate' (AppX new xs) xsss
-leftAssociate' new [left, right]        = AppX new right
+leftAssociate' new [left, right]        = leftAssociate' (AppX new left) [right]
 leftAssociate' new [last]               = AppX new last
 leftAssociate' _ other                  = error $ "leftAssociate does not expects this kind of Expression here: " ++ show other
 
