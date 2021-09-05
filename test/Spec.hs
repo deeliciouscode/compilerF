@@ -101,6 +101,12 @@ spec = do
   describe "Testprog12" $ do
     it "" $
       emulateFromString "main = let a = 1; b = 2; c = (a + b) in if not (a == b) | (c / 2 == 0) then c else a;" `shouldBe` RInt 3
+  describe "Testprog13" $ do
+    it "" $
+      emulateFromString "main = f 2; f a = let b = 3 in a + b;" `shouldBe` RInt 5
+  describe "Testprog14" $ do
+    it "" $
+      emulateFromString "main = f 2; f a = let b = 3; c = 5 in a + b;" `shouldBe` RInt 5
 
 main :: IO ()
 main = hspec spec

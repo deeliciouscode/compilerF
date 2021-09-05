@@ -78,7 +78,7 @@ translLocDefs locdefs@((LocDef name expr):xs) localEnv i = translExpr expr local
 translLetExpr :: Expr -> [LocDef] -> [(Name, Int)] -> Int -> [Instruction]
 translLetExpr expr locDefs localEnv i = translExpr expr localEnv' ++ slideLet (length locDefs)
                     where
-                        localEnv' = addLetEnv (reverse locDefs) localEnv i
+                         localEnv' = addLetEnv (reverse locDefs) (incrementN localEnv (length locDefs)) i
 
 translatePlus :: Expr -> LocalEnvironment -> [Instruction]
 translatePlus (PlusX expr EmptyExpr) env = translExpr expr env ++ push "+"
@@ -129,6 +129,7 @@ addLetEnv :: Num t => [LocDef] -> [(Name, t)] -> t -> [(Name, t)]
 addLetEnv ((LocDef name expr):xs) localEnv i@counter =  addLetEnv xs ((name, i) : localEnv) (i+1)
 addLetEnv [] localEnv counter = localEnv
 
+
 updateLocalVarValue :: Num t => [LocDef] -> [(Name, t)] -> t -> [(Name, t)]
 updateLocalVarValue localDef localEnv i@counter = if length localDef > 1 then addLetEnv localDef localEnv i else localEnv
 
@@ -145,3 +146,9 @@ getPos a [] = 2
 
 increment :: [(a, Int)] -> [(a, Int)]
 increment = map(\(x,y) -> (x,y+1))
+
+incrementN locEnv n = map(\(x,y) -> (x,y+n)) locEnv
+
+testprog1 = [FuncDef "main" [] (AppX (VarX "f") (IntX 2)), FuncDef "f" ["a"] (LetX [(LocDef "b" (IntX 3)), (LocDef "c" (IntX 5))] (PlusX (VarX "a") (VarX "b")))]
+
+testProg2 = [VarDef "f" (LetX [LocDef "a" (IntX 1), LocDef "b" (VarX "a")] (PlusX (VarX "a") (VarX "b"))) ]
