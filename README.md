@@ -3,6 +3,19 @@
 
 -----------------------------------------------------------------------
 
+## How to use
+
+- Write the program you want to execute into a file. 
+
+- Run the command ```stack run -- <path/to/file>```
+
+- To run all the test cases defined in ```/tests/Spec.hs``` run: ```stack test```
+
+By convention we were using filenames ending with .f. 
+This is not mandatory but recommended to identify them quickly.
+
+-----------------------------------------------------------------------
+
 ## General Definitions
 
 ### Grammar, context-free Grammar, regular Grammar
@@ -117,23 +130,4 @@ AtomicExpression        ::= Var | Int | Bool | ( Expression )
 
 CompOp                  ::= == | <
 ```
------------------------------------------------------------------------
 
-## How to use
-
-1. Write the program you want to execute into a file. 
-
-2. Run the command
-
-```
-stack run -- <path/to/file>
-```
-3. To run all the test cases defined in ```/tests/Spec.hs``` run:
-
-```
-```
-
-
-
-By convention we were using filenames ending with .f. 
-This is not mandatory but recommended to identify them quickly.
