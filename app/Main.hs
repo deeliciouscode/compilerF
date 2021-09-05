@@ -1,14 +1,14 @@
 import System.IO
 import GHC.IO.Handle.Types (Handle(FileHandle))
-import Interpreter
+import System.Environment
 import Parser
 import CodeGeneration
 import DataStructures
 import Emulator
 
 main = do 
-    filename <- getLine
-    fileHandle <- openFile filename ReadMode 
+    filename <- getArgs
+    fileHandle <- openFile (head filename) ReadMode 
     contents <- hGetContents fileHandle
     putStrLn ""
     putStrLn "------------ Program Code ------------"
@@ -26,8 +26,6 @@ main = do
     print code
     putStrLn ""
     putStrLn "-------- Result --------"
-    let result = emulate (code, [], defList, [], EmptyInstruction, 0, 0)
+    let result = emulate (code, [], defList, [], 0, 0)
     print result
     hClose fileHandle
-
----------------------------------------------------------------

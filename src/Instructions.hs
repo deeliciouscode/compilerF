@@ -1,24 +1,28 @@
 module Instructions where
-import Data.Maybe
-import Parser
-import Helpers
-import Lexer
 import DataStructures
 
+mHead :: [Instruction]
 mHead = [Reset, Pushfun "main", Call, Halt]
 
+mTail :: [Instruction]
 mTail = mFalse ++ mTrue ++ mNot ++ mNegate ++  mOr ++ mAnd ++ mPlus ++ mMinus ++ mMult ++ mDiv ++ mEq ++ mLess ++ mIf
 
+makeapp :: [Instruction] -> [Instruction]
 makeapp a = a ++ [Makeapp]
 
+push :: String -> [Instruction]
 push op = [Pushfun op, Makeapp]
 
+functionTail :: Int -> [Instruction]
 functionTail n = [Update n, Slide (n+1), Unwind, Call, Return]
 
+varTail :: [Instruction]
 varTail = [Update 0, Slide 1, Unwind, Call, Return]
 
+allocMake :: [Instruction]
 allocMake = [Alloc, Makeapp]
 
+slideLet :: Int -> [Instruction]
 slideLet n = [SlideLet n]
 
 initDef :: [DefCell]
@@ -38,6 +42,7 @@ initDef =
     , ("if", (3,11))
     ]
 
+mFalse :: [Instruction]
 mFalse = [Pushval (BoolX False)
     , Update 0
     , Slide 1
@@ -45,6 +50,8 @@ mFalse = [Pushval (BoolX False)
     , Call
     , Return
     ]
+
+mTrue :: [Instruction]
 mTrue = [Pushval (BoolX True)
     , Update 0
     , Slide 1
@@ -52,6 +59,8 @@ mTrue = [Pushval (BoolX True)
     , Call
     , Return
     ]
+
+mNegate :: [Instruction]
 mNegate = [Pushparam 1
     , Unwind
     , Call
@@ -60,6 +69,8 @@ mNegate = [Pushparam 1
     , Slide 2
     , Return
     ]
+
+mNot :: [Instruction]
 mNot = [Pushparam 1
     , Unwind
     , Call
@@ -68,6 +79,8 @@ mNot = [Pushparam 1
     , Slide 2
     , Return
     ]
+
+mOr :: [Instruction]
 mOr = [Pushparam 1
     , Unwind
     , Call
@@ -79,6 +92,8 @@ mOr = [Pushparam 1
     , Slide 3   
     , Return
     ]    
+
+mAnd :: [Instruction]
 mAnd = [Pushparam 1
     , Unwind
     , Call
@@ -90,6 +105,8 @@ mAnd = [Pushparam 1
     , Slide 3
     , Return
     ]
+
+mPlus :: [Instruction]
 mPlus = [Pushparam 1
     , Unwind
     , Call
@@ -101,6 +118,8 @@ mPlus = [Pushparam 1
     , Slide 3
     , Return
     ]    
+
+mMinus :: [Instruction]
 mMinus = [Pushparam 1
     , Unwind
     , Call
@@ -112,6 +131,8 @@ mMinus = [Pushparam 1
     , Slide 3
     , Return
     ]   
+
+mMult :: [Instruction]
 mMult = [Pushparam 1
     , Unwind
     , Call
@@ -123,6 +144,8 @@ mMult = [Pushparam 1
     , Slide 3
     , Return
     ]    
+
+mDiv :: [Instruction]
 mDiv = [Pushparam 1
     , Unwind
     , Call
@@ -134,6 +157,8 @@ mDiv = [Pushparam 1
     , Slide 3
     , Return
     ]    
+
+mEq :: [Instruction]
 mEq = [Pushparam 1
     , Unwind
     , Call
@@ -145,6 +170,8 @@ mEq = [Pushparam 1
     , Slide 3
     , Return
     ] 
+
+mLess :: [Instruction]
 mLess = [Pushparam 1
     , Unwind
     , Call
@@ -156,6 +183,8 @@ mLess = [Pushparam 1
     , Slide 3
     , Return
     ]
+    
+mIf :: [Instruction]
 mIf = [Pushparam 1
     , Unwind
     , Call

@@ -22,11 +22,10 @@ data HeapType   = DEF String NumArgs CodeAdr
 -- Storages 
 -- type Code       = [Instructions] -- Output of Code Generation / defined below
 type Stack      = [StackType]
-type Global     = [(String, (NumArgs, CodeAdr))] -- Maybe have function that translates Operators to strings
+-- type Global     = [(String, (NumArgs, CodeAdr))] -- Maybe have function that translates Operators to strings
 type Heap       = [HeapType]
 
 -- Registers
-type I          = Instructions
 type T          = Int
 type P          = Int
 
@@ -36,11 +35,11 @@ data Result     = RBool Bool
                 | Placeholder
                 | Debug String
                 | RuntimeError String
-            deriving (Show)
+            deriving (Show, Eq)
 
 --------------------------------------------------------
 
-data Instructions 
+data Instruction
   = Pushfun String 
   | Pushval Expr 
   | Reset 
@@ -55,7 +54,6 @@ data Instructions
   | Alloc 
   | SlideLet Int 
   | Update Int
-  | EmptyInstruction
   deriving (Show, Eq)  
 
 data OpInstrConstr  
@@ -91,7 +89,7 @@ type DefCell = (String, (Int,Int))
 
 type GlobalEnvironment = [DefCell]
 
-type Code = [Instructions]
+type Code = [Instruction]
 
 type Output = (GlobalEnvironment, Code)
 
