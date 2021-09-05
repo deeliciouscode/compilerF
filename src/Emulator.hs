@@ -24,11 +24,17 @@ runtest4 = emulate (code4, stack, global4, heap, i, t, p)
 runtest5 :: Result
 runtest5 = emulate (code5, stack, global5, heap, i, t, p)
 
+runtest6 :: Result
+runtest6 = emulate (code6, stack, global6, heap, i, t, p)
+
 testHeap :: [HeapType]
 testHeap = [IND 1, IND 1, APP' 1 2, VAL (Int 1), DEF "a" 1 2]
 
 -- Emulator
-type Context = (Code, Stack, Global, Heap, I, T, P)
+type Context = (Code, Stack, GlobalEnvironment, Heap, I, T, P)
+
+emulate' :: (GlobalEnvironment, Code) -> Result
+emulate' (env, code) = emulate (code, [], env, [], EmptyInstruction, 0, 0)
 
 emulate :: Context -> Result
 emulate all@(code, stack, global, heap, i, t, p)
@@ -47,7 +53,7 @@ fillHeap (code, stack, global, heap, i, t, p) = (code, stack, global, filledHeap
                                 where
                                     filledHeap = fillFromGlobal global heap
 
-fillFromGlobal :: Global -> Heap -> Heap
+fillFromGlobal :: GlobalEnvironment -> Heap -> Heap
 fillFromGlobal [] heap                      = heap
 fillFromGlobal ((name, (n, a)):rest) heap   = DEF name n a : fillFromGlobal rest heap
 
@@ -88,15 +94,15 @@ execPushfun name (code, stack, global, heap, i, t, p) = (code, stack', global, h
                                     t' = t + 1
                                     stack' = pushHRef name stack global
 
-pushHRef :: String -> Stack -> Global -> Stack
+pushHRef :: String -> Stack -> GlobalEnvironment -> Stack
 pushHRef name stack global = stack ++ [H index]
                                 where
                                     index = indexByName name global
 
-indexByName :: String -> Global -> Int
+indexByName :: String -> GlobalEnvironment -> Int
 indexByName name global = indexByNameFromZero name global 0
 
-indexByNameFromZero :: String -> Global -> Int -> Int
+indexByNameFromZero :: String -> GlobalEnvironment -> Int -> Int
 indexByNameFromZero name [] i = error $ "Something went wrong in indexByNameFromZero. Name not found. " ++ show name  
 indexByNameFromZero name ((defName, (_, _)) : rest) i
                                             | name == defName   = i

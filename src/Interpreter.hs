@@ -4,7 +4,7 @@ import DataStructures
 import Lexer
 import Parser
 import Data.Maybe
-
+import Emulator
 import CodeGeneration
 
 -- F Spezifikationen (Skript Seite 61):
@@ -46,6 +46,8 @@ static = do
 parseWith :: Parser Token a -> String -> a
 parseWith parser string = fromJust $ fst (parser $ genListOfTokens string)
 
+emulateFromString :: String -> Result
+emulateFromString str = emulate' $ generate $ parseWith parseProgram str
 
 -- semantic Analysis
 

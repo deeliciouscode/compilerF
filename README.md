@@ -1,7 +1,9 @@
-# A compiler for the language F 
-## In context of the course "Implementierung von Programmiersprachen" at LMU University.
+# A compiler for the programming language F 
+### In context of the course "Implementierung von Programmiersprachen" at Ludwig Maximilian University of Munich.
 
-## Definitions
+-----------------------------------------------------------------------
+
+## General Definitions
 
 ### Grammar, context-free Grammar, regular Grammar
 
@@ -27,10 +29,11 @@
 
 - Eine Grammatik G = (V, Σ, P, S) heißt regulär, falls sie linkslinear oder rechtslinear ist.
 
+-----------------------------------------------------------------------
 
-### LL(1) - Grammar
+### The Grammar of F
 
-Backus Naur Form von F:
+Extended Backus Naur Form of F:
 ```
 Programm             ::= Definition ";" { Definition ";"} .
 Definition           ::= Variable {Variable} "=" Ausdruck .
@@ -49,7 +52,7 @@ AtomarerAusdruck     ::= Variable | Zahl | Wahrheitswert .
 Variable             ::= Name .
 ```
 
-Provided by Philip
+Extended Backus Naur Form of F after removal of left recursion:
 ```
 Program ::= Definition ; {Definition ;}
 Definition ::= Variable {Variable} = Expression
@@ -73,7 +76,7 @@ AtomicExpression ::= Variable | Literal | ( Expression )
 ComparisonOperator ::= == | <
 ```
 
-Provided by Phillip modified:
+Backus Naur Form of F that can be implemented:
 ```
 Program                 ::= Definition ; RestProgramm
 RestProgramm            ::= \eps | Program ;
@@ -114,171 +117,14 @@ AtomicExpression        ::= Var | Int | Bool | ( Expression )
 
 CompOp                  ::= == | <
 ```
+-----------------------------------------------------------------------
 
------------------------------------------------------------------
+## How to use
 
-## Some evaluations of the current state
+1. Write the program you want to execute into a file. 
 
------------------------------------------------------------------
-
-"(1 + 2) * 3;"
-
-Just 
-(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 
-(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) RE6eps)) 
-(PLUS (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 2)) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))) RE7eps) 
-(MULT (Expr7 (AtomExpr (T_INT 3)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))
-
-------------------------------------------------------------------
-
-"(foo bar) 1 * 3;"
-
-(Just 
-(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 
-(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "foo"))) 
-(App (Expr7 (AtomExpr (T_VAR (Name "bar"))) RE7eps))) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))) 
-(App (Expr7 (AtomExpr (T_INT 1)) RE7eps))) 
-(MULT (Expr7 (AtomExpr (T_INT 3)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps)),[])
-
-            MULT 
-        APP     3
-    APP     1
-foo     bar
-
-------------------------------------------------------------------
-
-"foo bar zoom 1;"
-
-Just 
-(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_VAR (Name "foo"))) 
-(App (Expr7 (AtomExpr (T_VAR (Name "bar"))) 
-(App (Expr7 (AtomExpr (T_VAR (Name "zoom"))) 
-(App (Expr7 (AtomExpr (T_INT 1)) RE7eps))))))) RE6eps)) RE4eps) RE3eps) RE2eps) RE1eps))
-
-------------------------------------------------------------------
-
-"(1 * (2 + (3 + 4))) - (5 / 6);"
-
-Just 
-(Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 
-(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
-(T_INT 1)) RE7eps) 
-(MULT (Expr7 
-(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
-(T_INT 2)) RE7eps) RE6eps)) 
-(PLUS (PosExpr5 (Expr6 (Expr7 
-(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
-(T_INT 3)) RE7eps) RE6eps)) 
-(PLUS (PosExpr5 (Expr6 (Expr7 (AtomExpr 
-(T_INT 4)) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))) RE7eps) RE6eps)) 
-(MINUS (PosExpr5 (Expr6 (Expr7 
-(Parenthesised (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr 
-(T_INT 5)) RE7eps) 
-(DIV (Expr7 (AtomExpr 
-(T_INT 6)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))) RE7eps) RE6eps)))) RE3eps) RE2eps) RE1eps))
-
-------------------------------------------------------------------
-
-"1 * 2;"
-
-Just 
-    (Expr (Expr1 (Expr2 (Expr3 (Expr4 (PosExpr5 (Expr6 (Expr7 (AtomExpr (T_INT 1)) RE7eps) 
-    (MULT (Expr7 (AtomExpr (T_INT 2)) RE7eps)))) RE4eps) RE3eps) RE2eps) RE1eps))
+2. 
 
 
-                App
-        APP            2
-MULT          1
-
-
-"(* 1) 2;"
-
-------------------------------------------------------------------
-
-Just (PosExpr (Mult (Int 1) (Mult (Plus (PosExpr (Int 1)) (PosExpr (Int 3))) (Int 4))))
-
-------------------------------------------------------------------
-
-"1 - (1 + 3) - 4;"
-Just (Minus 
-        (PosExpr (Int 1)) 
-        (Minus 
-            (PosExpr (Plus 
-                (PosExpr (Int 1)) 
-                (PosExpr (Int 3)))) 
-            (PosExpr (Int 4))))
-
-------------------------------------------------------------------
-
-"(1 - (1 + 3)) - 4;"
-Just (Minus 
-        (PosExpr (Minus 
-            (PosExpr (Int 1)) 
-            (PosExpr (Plus (PosExpr (Int 1)) (PosExpr (Int 3)))))) 
-        (PosExpr (Int 4)))
-
-------------------------------------------------------------------
-
-"1 - ((1 + 3) - 4);"
-Just (Minus 
-        (PosExpr (Int 1)) 
-        (PosExpr (Minus 
-            (PosExpr (Plus 
-                (PosExpr (Int 1)) 
-                (PosExpr (Int 3)))) 
-            (PosExpr (Int 4)))))
-
-------------------------------------------------------------------
-
-"let a = 1; b = (2 * 3) in a + b;"
-
-Let (LocDefs (LocDef (Name "a") (Pos (Int 1))) (RLocDefs (LocDefs (LocDef (Name "b") (Pos (Pos (Mult (Int 2) (Int 3))))) LDeps))) (Plus (Pos (Var "a")) (Pos (Var "b")))
-
-------------------------------------------------------------------
-
-a = 1;
-b = 2;
-c = a + b;
-f x y z = if x < 10 then let y = y * y in y * z else x / y;
-main = f a b c;
-
-==> 
-
-[
-
-VarDef 
-    "a" 
-    (Pos (Int 1)),
-
-VarDef 
-    "b" 
-    (Pos (Int 2)),
-
-VarDef 
-    "c" 
-    (Plus 
-        (Pos (Var "a")) 
-        (Pos (Var "b"))),
-
-FuncDef 
-    "f" 
-    ["x","y","z"] 
-    (If 
-        (Smaller 
-            (Pos (Var "x")) 
-            (Pos (Int 10))) 
-        (Let 
-            [LocDef 
-                "y" 
-                (Pos (Mult (Var "y") (Var "y")))] 
-            (Pos (Mult (Var "y") (Var "z")))) 
-        (Pos (Div (Var "x") (Var "y")))),
-
-VarDef 
-    "main" 
-    (Pos (App 
-            (Var "f") 
-            (App 
-                (Var "a") 
-                (App 
-                    (Var "b") (Var "c")))))]
+By convention we were using filenames ending with .f. 
+This is not mandatory but recommended to identify them quickly.
