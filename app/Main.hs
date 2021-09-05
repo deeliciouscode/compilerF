@@ -4,9 +4,7 @@ import System.Environment
 import Parser
 import CodeGeneration
 import DataStructures
-import Lexer
 import Emulator
-import Data.Maybe
 
 main = do 
     filename <- getArgs
@@ -16,22 +14,18 @@ main = do
     putStrLn "------------ Program Code ------------"
     putStrLn contents
     putStrLn ""
-    putStrLn "--------------- Tokens ---------------"
-    let tokens = genListOfTokens contents
-    print tokens
-    putStrLn ""
     putStrLn "-------- Abstract Syntax Tree --------"
-    let (Just ast, _) = parseProgram tokens
+    let ast = parseWith parseProgram contents
     print ast
-    putStrLn ""
-    putStrLn "-------------- Def List --------------"
     let (defList, code) = generate ast
+    putStrLn ""
+    putStrLn "-------- Def List --------"
     print defList
     putStrLn ""
-    putStrLn "---------------- Code ----------------"
+    putStrLn "-------- Code --------"
     print code
     putStrLn ""
-    putStrLn "--------------- Result ---------------"
+    putStrLn "-------- Result --------"
     let result = emulate (code, [], defList, [], 0, 0)
     print result
     hClose fileHandle

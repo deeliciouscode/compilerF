@@ -5,14 +5,11 @@
 
 -- in f:
 
--- fib n = if n == 0
---        then 0
---        else 
---            if n == 1 
---            then 1 
---            else (fib (n - 1)) + (fib (n - 2));
+fib n = if n == 0
+        then 0
+        else 
+            if n == 1 
+            then 1 
+            else (fib (n - 1)) + (fib (n - 2));
 
--- main = fib 8;
-
-main = f 2; 
-f a = let b = 3 in a + b;
+main = fib 8;
