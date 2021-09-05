@@ -14,6 +14,10 @@ retokenize (x:xs:xss)
                 | x == TEQUAL && xs == TEQUAL = TBinOp BO_EQUAL : retokenize xss
                 | x == TLPAREN && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
                 | x == TEQUAL && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
+                | x == T_IN && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
+                | x == T_IF && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
+                | x == T_THEN && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
+                | x == T_ELSE && xs == TBinOp BO_MINUS = x : TUniOp UO_MINUS : retokenize xss
 retokenize (x:xs) = x : retokenize xs
 
 dialex :: String -> [Token]
