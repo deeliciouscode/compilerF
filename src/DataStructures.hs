@@ -16,6 +16,7 @@ data HeapType   = DEF String NumArgs CodeAdr
                 | IND HeapAdr
                 | APP' HeapAdr HeapAdr
                 | VAL Value
+                | UNINIZIALIZED
             deriving (Show, Eq)
 
 -- Storages 

@@ -38,4 +38,6 @@
 
 -- main = f 0 1 2; f a b c = c;
 
-main = f 0 1 2; f a b c = k1 a b; k1 a b = b;
+-- main = f 0 1 2; f a b c = k1 a b; k1 a b = b;
+
+main = let a = 1; b = k1 3 4 in a + b; k1 a b = b;

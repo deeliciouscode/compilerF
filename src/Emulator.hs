@@ -58,8 +58,8 @@ execute all@(code, stack, global, heap, i, t, p) =
         Reset               -> execute . execReset $ increaseP all
         Pushfun name        -> execute . execPushfun name $ increaseP all
         Call                -> execute . execCall $ increaseP all
-        Update int          -> execute . execUpdate int $ increaseP all
-        Slide int           -> execute . execSlide int $ increaseP all
+        Update n            -> execute . execUpdate n $ increaseP all
+        Slide n             -> execute . execSlide n $ increaseP all
         Unwind              -> execute . execUnwind $ increaseP all
         Pushval val         -> execute . execPushval val $ increaseP all
         Return              -> execute . execReturn $ increaseP all
@@ -68,7 +68,7 @@ execute all@(code, stack, global, heap, i, t, p) =
         Pushparam n         -> execute . execPushparam n $ increaseP all
         Operator op         -> execute . execOperator op $ increaseP all
         Alloc               -> execute . execAlloc $ increaseP all
-        SlideLet int        -> Debug (show (SlideLet int))
+        SlideLet n          -> execute . execSlideLet n $ increaseP all
         EmptyInstruction    -> Debug (show EmptyInstruction)
 
 readCode :: Code -> P -> I
@@ -166,6 +166,7 @@ execUnwind pass@(code, stack, global, heap, i, t, p) =
                     p' = p - 1
             DEF name numArgs codeAddr -> pass
             VAL value -> pass
+            UNINIZIALIZED -> pass
 
 execPushval :: Expr -> Context -> Context
 execPushval (IntX x) (code, stack, global, heap, i, t, p) = (code, stack', global, heap', i, t', p)
@@ -350,4 +351,14 @@ execOperator If (code, stack, global, heap, i, t, p) =
             _               -> error "Something went wrong in execOperator If. Only Val v is expected here."
 
 execAlloc :: Context -> Context
-execAlloc (code, stack, global, heap, i, t, p) = (code, stack, global, heap, i, t, p)
+execAlloc (code, stack, global, heap, i, t, p) = (code, stack', global, heap', i, t', p)
+                where
+                    stack' = stack ++ [H (length heap)]
+                    heap' = heap ++ [UNINIZIALIZED]
+                    t' = t + 1
+
+execSlideLet :: Int -> Context -> Context
+execSlideLet n (code, stack, global, heap, i, t, p) = (code, stack', global, heap, i, t', p)
+                where
+                    t' = t - n
+                    stack' = take (t - n) stack ++ [last stack]
