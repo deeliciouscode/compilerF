@@ -157,3 +157,5 @@ testProg2 = [VarDef "f" (LetX [LocDef "a" (IntX 1), LocDef "b" (VarX "a")] (Plus
 
 
 wichtiger code
+
+wichtiger code 2
