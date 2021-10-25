@@ -148,3 +148,9 @@ increment :: [(a, Int)] -> [(a, Int)]
 increment = map(\(x,y) -> (x,y+1))
 
 incrementN locEnv n = map(\(x,y) -> (x,y+n)) locEnv
+
+----------------------------------------------------------------
+
+
+
+
