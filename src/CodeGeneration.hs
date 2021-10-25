@@ -152,3 +152,8 @@ incrementN locEnv n = map(\(x,y) -> (x,y+n)) locEnv
 testprog1 = [FuncDef "main" [] (AppX (VarX "f") (IntX 2)), FuncDef "f" ["a"] (LetX [(LocDef "b" (IntX 3)), (LocDef "c" (IntX 5))] (PlusX (VarX "a") (VarX "b")))]
 
 testProg2 = [VarDef "f" (LetX [LocDef "a" (IntX 1), LocDef "b" (VarX "a")] (PlusX (VarX "a") (VarX "b"))) ]
+-------------------
+
+
+
+wichtiger code
